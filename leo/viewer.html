@@ -361,56 +361,161 @@
         .form-label {
             color: var(--accent-primary);
         }
+
+        /* Side-by-Side Layout Styles */
+        .mode-side-by-side .view-mode-container {
+            display: flex;
+            gap: 1.5rem;
+            align-items: stretch;
+            height: calc(100vh - 180px); /* Adjust based on header/footer height */
+            min-height: 500px;
+        }
+
+        .mode-side-by-side .editor-container,
+        .mode-side-by-side .preview-container {
+            flex: 1;
+            margin-bottom: 0;
+            overflow: hidden; /* Manage internal scrolling */
+            display: flex;
+            flex-direction: column;
+            width: 50%; /* Explicitly set width to enforce even split */
+        }
+
+        .mode-side-by-side .textarea-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .mode-side-by-side #markdownInput {
+            flex: 1;
+            resize: none; /* Disable manual resize in side-by-side mode */
+            height: 100% !important; /* Override min-height */
+            min-height: 0;
+        }
+
+        .mode-side-by-side #markdownPreview {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 0.5rem; /* Add some padding for scrollbar */
+        }
+
+        /* Custom Scrollbar for side-by-side panels */
+        .mode-side-by-side #markdownInput::-webkit-scrollbar,
+        .mode-side-by-side #markdownPreview::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .mode-side-by-side #markdownInput::-webkit-scrollbar-track,
+        .mode-side-by-side #markdownPreview::-webkit-scrollbar-track {
+            background: var(--neutral-lightest);
+            border-radius: 4px;
+        }
+
+        .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb,
+        .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb {
+            background: var(--neutral-medium);
+            border-radius: 4px;
+        }
+
+        .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb:hover,
+        .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb:hover {
+            background: var(--neutral-dark);
+        }
+
+        /* Hide elements that might clutter side-by-side view if needed */
+        .mode-side-by-side .header {
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive override: Disable side-by-side on small screens */
+        @media (max-width: 767.98px) {
+            .mode-side-by-side .view-mode-container {
+                display: block;
+                height: auto;
+            }
+            .mode-side-by-side .editor-container,
+            .mode-side-by-side .preview-container {
+                width: 100%;
+                overflow: visible;
+                height: auto;
+            }
+            .mode-side-by-side #markdownInput {
+                height: auto !important;
+                resize: vertical;
+            }
+            .mode-side-by-side #markdownPreview {
+                overflow-y: visible;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="container">
-            <h1>View Scrubbai</h1>
-            <p>Professional Markdown Viewer & Editor</p>
+        <div class="container d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>View Scrubbai</h1>
+                <p>Professional Markdown Viewer & Editor</p>
+            </div>
+            <div class="settings-panel d-flex align-items-center gap-3 mt-3 mt-md-0">
+                <div class="form-check form-switch d-none d-md-block">
+                    <input class="form-check-input" type="checkbox" id="layoutToggle">
+                    <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
+                </div>
+                <div id="widthControl" class="d-none d-flex align-items-center gap-2">
+                    <label for="widthSlider" class="form-label mb-0 small text-nowrap">Width:</label>
+                    <input type="range" class="form-range" id="widthSlider" min="50" max="100" value="80" style="width: 100px;">
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="editor-container">
-            <div class="textarea-wrapper">
-                <label for="markdownInput" class="form-label fw-bold" style="color: var(--stryker-navy);">
-                    Markdown Editor
-                </label>
-                <textarea
-                    id="markdownInput"
-                    class="form-control"
-                    rows="20"
-                    placeholder="Type or paste your markdown here...&#10;&#10;# Example Heading&#10;&#10;This is a **bold** statement with *italic* text.&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```javascript&#10;console.log('Hello, World!');&#10;```&#10;&#10;```mermaid&#10;graph TD;&#10;    A-->B;&#10;```"
-                ></textarea>
+    <div id="mainContainer" class="container">
+        <div class="view-mode-container">
+            <div class="editor-container">
+                <div class="textarea-wrapper">
+                    <label for="markdownInput" class="form-label fw-bold" style="color: var(--stryker-navy);">
+                        Markdown Editor
+                    </label>
+                    <textarea
+                        id="markdownInput"
+                        class="form-control"
+                        rows="20"
+                        placeholder="Type or paste your markdown here...&#10;&#10;# Example Heading&#10;&#10;This is a **bold** statement with *italic* text.&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```javascript&#10;console.log('Hello, World!');&#10;```&#10;&#10;```mermaid&#10;graph TD;&#10;    A-->B;&#10;```"
+                    ></textarea>
+                </div>
+
+                <div id="statusIndicator" class="status-indicator status-valid">
+                    Valid markdown - No issues detected
+                </div>
+
+                <div class="button-group">
+                    <button id="clearBtn" class="btn btn-stryker-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                        </svg>
+                        Clear
+                    </button>
+                    <button id="rerenderBtn" class="btn btn-stryker-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
+                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                        </svg>
+                        Re-render
+                    </button>
+                </div>
             </div>
 
-            <div id="statusIndicator" class="status-indicator status-valid">
-                Valid markdown - No issues detected
-            </div>
-
-            <div class="button-group">
-                <button id="clearBtn" class="btn btn-stryker-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
-                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                    </svg>
-                    Clear
-                </button>
-                <button id="rerenderBtn" class="btn btn-stryker-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
-                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
-                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
-                    </svg>
-                    Re-render
-                </button>
-            </div>
-        </div>
-
-        <div class="preview-container">
-            <h2 class="preview-header">Preview</h2>
-            <div id="markdownPreview" class="empty-state">
-                Your rendered markdown will appear here...
+            <div class="preview-container">
+                <h2 class="preview-header fw-bold" style="color: var(--stryker-navy); font-size: 1rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">
+                    Preview
+                </h2>
+                <div id="markdownPreview" class="empty-state">
+                    Your rendered markdown will appear here...
+                </div>
             </div>
         </div>
     </div>
@@ -455,8 +560,95 @@
         const clearBtn = document.getElementById('clearBtn');
         const rerenderBtn = document.getElementById('rerenderBtn');
 
+        const layoutToggle = document.getElementById('layoutToggle');
+        const widthSlider = document.getElementById('widthSlider');
+        const widthControl = document.getElementById('widthControl');
+        const mainContainer = document.getElementById('mainContainer');
+
         // Debounce timer
         let debounceTimer;
+
+        // View Mode Handlers
+        function toggleLayout() {
+            const isSideBySide = layoutToggle.checked;
+
+            if (isSideBySide) {
+                document.body.classList.add('mode-side-by-side');
+                widthControl.classList.remove('d-none');
+
+                // Set initial container width from slider
+                updateContainerWidth();
+
+                // Initialize scroll sync
+                initScrollSync();
+            } else {
+                document.body.classList.remove('mode-side-by-side');
+                widthControl.classList.add('d-none');
+
+                // Reset container width
+                mainContainer.style.maxWidth = '';
+
+                // Remove scroll sync
+                removeScrollSync();
+            }
+        }
+
+        function updateContainerWidth() {
+            if (layoutToggle.checked) {
+                const width = widthSlider.value;
+                mainContainer.style.maxWidth = `${width}%`;
+            }
+        }
+
+        // Scroll Sync Logic
+        let isSyncingLeftScroll = false;
+        let isSyncingRightScroll = false;
+
+        function syncScrollLeft(e) {
+            if (!layoutToggle.checked) return;
+            if (isSyncingLeftScroll) {
+                isSyncingLeftScroll = false;
+                return;
+            }
+
+            isSyncingRightScroll = true;
+
+            // Calculate percentage
+            const percentage = markdownInput.scrollTop / (markdownInput.scrollHeight - markdownInput.offsetHeight);
+
+            // Apply to preview
+            markdownPreview.scrollTop = percentage * (markdownPreview.scrollHeight - markdownPreview.offsetHeight);
+        }
+
+        function syncScrollRight(e) {
+            if (!layoutToggle.checked) return;
+            if (isSyncingRightScroll) {
+                isSyncingRightScroll = false;
+                return;
+            }
+
+            isSyncingLeftScroll = true;
+
+            // Calculate percentage
+            const percentage = markdownPreview.scrollTop / (markdownPreview.scrollHeight - markdownPreview.offsetHeight);
+
+            // Apply to editor
+            markdownInput.scrollTop = percentage * (markdownInput.scrollHeight - markdownInput.offsetHeight);
+        }
+
+        function initScrollSync() {
+            markdownInput.addEventListener('scroll', syncScrollLeft);
+            markdownPreview.addEventListener('scroll', syncScrollRight);
+        }
+
+        function removeScrollSync() {
+            markdownInput.removeEventListener('scroll', syncScrollLeft);
+            markdownPreview.removeEventListener('scroll', syncScrollRight);
+
+            // Reset flags
+            isSyncingLeftScroll = false;
+            isSyncingRightScroll = false;
+        }
 
         /**
          * Lint the markdown content and return status
@@ -636,6 +828,9 @@
         markdownInput.addEventListener('input', debouncedRender);
         clearBtn.addEventListener('click', clearEditor);
         rerenderBtn.addEventListener('click', renderMarkdown);
+
+        layoutToggle.addEventListener('change', toggleLayout);
+        widthSlider.addEventListener('input', updateContainerWidth);
 
         // Initial render
         renderMarkdown();
