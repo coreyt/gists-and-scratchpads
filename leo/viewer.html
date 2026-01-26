@@ -11,6 +11,9 @@
     <!-- marked.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
 
+    <!-- Mermaid.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+
     <style>
         :root {
             /* PLF Neutral Colors */
@@ -378,7 +381,7 @@
                     id="markdownInput"
                     class="form-control"
                     rows="20"
-                    placeholder="Type or paste your markdown here...&#10;&#10;# Example Heading&#10;&#10;This is a **bold** statement with *italic* text.&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```javascript&#10;console.log('Hello, World!');&#10;```"
+                    placeholder="Type or paste your markdown here...&#10;&#10;# Example Heading&#10;&#10;This is a **bold** statement with *italic* text.&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```javascript&#10;console.log('Hello, World!');&#10;```&#10;&#10;```mermaid&#10;graph TD;&#10;    A-->B;&#10;```"
                 ></textarea>
             </div>
 
@@ -422,13 +425,27 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
     <script>
+        // Initialize Mermaid
+        mermaid.initialize({ startOnLoad: false });
+
+        // Configure custom renderer for marked
+        const renderer = new marked.Renderer();
+        const originalCodeRenderer = renderer.code.bind(renderer);
+        renderer.code = function(code, language, isEscaped) {
+            if (language === 'mermaid') {
+                return '<div class="mermaid">' + code + '</div>';
+            }
+            return originalCodeRenderer(code, language, isEscaped);
+        };
+
         // Initialize marked.js configuration
         marked.setOptions({
             breaks: true,
             gfm: true,
             headerIds: true,
             mangle: false,
-            sanitize: false
+            sanitize: false,
+            renderer: renderer
         });
 
         // DOM elements
@@ -582,6 +599,11 @@
             try {
                 const html = marked.parse(content);
                 markdownPreview.innerHTML = html;
+
+                // Initialize Mermaid diagrams
+                mermaid.run({
+                    nodes: document.querySelectorAll('.mermaid')
+                });
             } catch (error) {
                 markdownPreview.innerHTML = `<div class="alert alert-danger">
                     <strong>Rendering Error:</strong> ${error.message}
