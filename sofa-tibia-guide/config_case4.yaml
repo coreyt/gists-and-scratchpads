@@ -1,0 +1,47 @@
+# SOFA Tibia Guide Simulation Configuration - CASE4
+#
+# Mesh files from 6dof-mc project
+# Run with: python experiments/run_disturbance.py --config config_case4.yaml
+#
+# NOTE: CASE4 is unique - the STL files already contain coordinate transforms
+# that place the tibia and guide at (or very close to) the global optimum
+# for guide seating. This makes CASE4 ideal for validation since no ICP
+# transform is needed.
+
+tibia:
+  visual_path: /home/coreyt/projects/6dof-mc/prod/data/CASE4/CASE4_CroppedTibiaBone.stl
+  collision_path: null  # Use visual mesh for collision (may need decimation)
+
+guide:
+  visual_path: /home/coreyt/projects/6dof-mc/prod/data/CASE4/CASE4_ResectThruTibiaGuide.stl
+  collision_path: null  # Use visual mesh for collision (may need decimation)
+
+guide_initial_pose:
+  # Identity pose - meshes are already positioned at optimal seating in STL
+  position: [0.0, 0.0, 0.0]
+  quaternion: [1.0, 0.0, 0.0, 0.0]  # w, x, y, z
+
+guide_mass_kg: 0.05  # 50 grams (typical for plastic guide)
+
+disturbance:
+  # Disturbance force/torque to test stability
+  force: [0.0, 0.0, 0.0]      # N
+  torque: [0.0, 0.0, 0.0]     # N·mm
+  start_time: 0.0
+  duration: inf
+
+solver:
+  dt: 0.001                   # 1ms timestep
+  gravity: [0.0, 0.0, -9810.0]  # mm/s^2 (Z-down)
+  friction_coefficient: 0.3   # Metal/bone interface
+  constraint_iterations: 100
+  constraint_tolerance: 1.0e-6
+
+output:
+  output_dir: outputs/case4
+  pose_csv: pose_timeseries.csv
+  pose_json: pose_final.json
+  sample_interval: 10         # Save every 10 steps
+
+duration_seconds: 2.0         # Total simulation time
+seed: 42                      # For reproducibility

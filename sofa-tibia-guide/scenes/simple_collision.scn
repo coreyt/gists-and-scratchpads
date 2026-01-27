@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!-- Simple collision test: falling box on a floor -->
+<Node name="root" dt="0.001" gravity="0 0 -9810">
+    <RequiredPlugin name="Sofa.Component.AnimationLoop"/>
+    <RequiredPlugin name="Sofa.Component.Collision.Detection.Algorithm"/>
+    <RequiredPlugin name="Sofa.Component.Collision.Detection.Intersection"/>
+    <RequiredPlugin name="Sofa.Component.Collision.Geometry"/>
+    <RequiredPlugin name="Sofa.Component.Collision.Response.Contact"/>
+    <RequiredPlugin name="Sofa.Component.Constraint.Lagrangian.Correction"/>
+    <RequiredPlugin name="Sofa.Component.Constraint.Lagrangian.Solver"/>
+    <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/>
+    <RequiredPlugin name="Sofa.Component.Mass"/>
+    <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/>
+    <RequiredPlugin name="Sofa.Component.StateContainer"/>
+    <RequiredPlugin name="Sofa.Component.Topology.Container.Constant"/>
+
+    <FreeMotionAnimationLoop/>
+    <LCPConstraintSolver tolerance="0.001" maxIt="1000"/>
+    <CollisionPipeline depth="6"/>
+    <BruteForceBroadPhase/>
+    <BVHNarrowPhase/>
+    <LocalMinDistance alarmDistance="2" contactDistance="1" angleCone="0"/>
+    <CollisionResponse response="FrictionContactConstraint"/>
+
+    <!-- Floor: static cube, top surface at z=0 -->
+    <Node name="Floor">
+        <MechanicalObject template="Vec3d" name="mstate"
+            position="-50 -50 -5  50 -50 -5  -50 50 -5  50 50 -5  -50 -50 0  50 -50 0  -50 50 0  50 50 0"/>
+        <MeshTopology name="topology" hexas="0 1 3 2 4 5 7 6"/>
+        <TriangleCollisionModel simulated="false" moving="false" contactStiffness="100"/>
+        <LineCollisionModel simulated="false" moving="false" contactStiffness="100"/>
+        <PointCollisionModel simulated="false" moving="false" contactStiffness="100"/>
+    </Node>
+
+    <!-- Box: falling cube, bottom starts at z=15 -->
+    <Node name="Box">
+        <EulerImplicitSolver rayleighStiffness="0.1" rayleighMass="0.1"/>
+        <CGLinearSolver iterations="25" tolerance="1e-9" threshold="1e-9"/>
+        <MechanicalObject template="Vec3d" name="mstate"
+            position="-5 -5 15  5 -5 15  -5 5 15  5 5 15  -5 -5 25  5 -5 25  -5 5 25  5 5 25"/>
+        <MeshTopology name="topology" hexas="0 1 3 2 4 5 7 6"/>
+        <UniformMass totalMass="0.1"/>
+        <UncoupledConstraintCorrection defaultCompliance="1e-5"/>
+        <TriangleCollisionModel simulated="true" moving="true" contactStiffness="100"/>
+        <LineCollisionModel simulated="true" moving="true" contactStiffness="100"/>
+        <PointCollisionModel simulated="true" moving="true" contactStiffness="100"/>
+    </Node>
+</Node>
