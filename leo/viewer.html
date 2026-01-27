@@ -5,74 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Scrubbai - Markdown Viewer & Editor</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Bootswatch Theme CSS (Flatly for light, Darkly for dark) -->
+    <link id="theme-stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/flatly/bootstrap.min.css" rel="stylesheet">
 
-    <!-- marked.js Library -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <!-- markdown-it Library (replacing marked.js for better source map support) -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
 
     <!-- Mermaid.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
 
     <style>
+        /* Light theme (Flatly) custom properties */
         :root {
-            /* PLF Neutral Colors */
-            --neutral-white: #FFFFFF;
-            --neutral-lightest: #EEEEEE;
-            --neutral-light: #DFDFDF;
-            --neutral-medium: #D1D1D1;
-            --neutral-dark: #B2B4AE;
-            --neutral-darkest: #707070;
+            --viewer-bg: #ecf0f1;
+            --viewer-card-bg: #ffffff;
+            --viewer-text: #2c3e50;
+            --viewer-text-muted: #7b8a8b;
+            --viewer-border: #dce4ec;
+            --viewer-primary: #2c3e50;
+            --viewer-accent: #18bc9c;
+            --viewer-code-bg: #ecf0f1;
+            --viewer-pre-bg: #2c3e50;
+            --viewer-pre-text: #ecf0f1;
+            --viewer-link: #18bc9c;
+            --viewer-table-header: #2c3e50;
+            --viewer-table-stripe: #f8f9fa;
+            --viewer-shadow: rgba(0, 0, 0, 0.08);
+            --viewer-divider-bg: #bdc3c7;
+            --viewer-divider-hover: #95a5a6;
+        }
 
-            /* PLF Accent Colors */
-            --accent-button: #414141;
-            --accent-primary: #1C5687;
-
-            /* PLF Patient Status Colors */
-            --status-green: #3A913F;
-            --status-blue: #2B72CC;
-            --status-yellow: #FFD200;
-            --status-red: #EB0000;
-
-            /* Legacy Stryker Colors (for gradients/special elements) */
-            --stryker-red: #E30613;
-            --stryker-navy: #002856;
+        /* Dark theme (Darkly) custom properties */
+        [data-theme="dark"] {
+            --viewer-bg: #222222;
+            --viewer-card-bg: #303030;
+            --viewer-text: #ffffff;
+            --viewer-text-muted: #adb5bd;
+            --viewer-border: #444444;
+            --viewer-primary: #00bc8c;
+            --viewer-accent: #00bc8c;
+            --viewer-code-bg: #444444;
+            --viewer-pre-bg: #1a1a1a;
+            --viewer-pre-text: #ffffff;
+            --viewer-link: #00bc8c;
+            --viewer-table-header: #00bc8c;
+            --viewer-table-stripe: #3a3a3a;
+            --viewer-shadow: rgba(0, 0, 0, 0.3);
+            --viewer-divider-bg: #555555;
+            --viewer-divider-hover: #00bc8c;
         }
 
         body {
-            background-color: var(--neutral-lightest);
-            color: var(--accent-button);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--viewer-bg);
+            color: var(--viewer-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .header {
-            background: var(--neutral-white);
-            color: var(--accent-primary);
+            background: var(--viewer-card-bg);
+            color: var(--viewer-primary);
             padding: 1.5rem 0;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            border-bottom: 3px solid var(--accent-primary);
+            box-shadow: 0 2px 4px var(--viewer-shadow);
+            border-bottom: 3px solid var(--viewer-accent);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .header h1 {
             font-weight: 600;
             margin: 0;
             font-size: 2rem;
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
         }
 
         .header p {
             margin: 0.5rem 0 0 0;
-            color: var(--neutral-darkest);
+            color: var(--viewer-text-muted);
             font-size: 0.95rem;
         }
 
         .editor-container {
-            background: var(--neutral-white);
+            background: var(--viewer-card-bg);
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px var(--viewer-shadow);
             margin-bottom: 2rem;
+            transition: background-color 0.3s ease;
         }
 
         .textarea-wrapper {
@@ -85,18 +103,19 @@
             min-height: 400px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            border: 2px solid var(--neutral-light);
+            border: 2px solid var(--viewer-border);
             border-radius: 6px;
             padding: 1rem;
             resize: vertical;
-            transition: border-color 0.3s ease;
-            background-color: var(--neutral-white);
+            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--viewer-card-bg);
+            color: var(--viewer-text);
         }
 
         #markdownInput:focus {
             outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 0.2rem rgba(28, 86, 135, 0.15);
+            border-color: var(--viewer-accent);
+            box-shadow: 0 0 0 0.2rem rgba(24, 188, 156, 0.25);
         }
 
         .status-indicator {
@@ -125,101 +144,62 @@
         }
 
         .status-valid {
-            background-color: rgba(58, 145, 63, 0.1);
-            color: var(--status-green);
-            border: 1px solid rgba(58, 145, 63, 0.3);
+            background-color: rgba(0, 188, 140, 0.15);
+            color: #00bc8c;
+            border: 1px solid rgba(0, 188, 140, 0.4);
         }
 
         .status-valid::before {
-            background-color: var(--status-green);
+            background-color: #00bc8c;
         }
 
         .status-warning {
-            background-color: rgba(255, 210, 0, 0.1);
-            color: #705c00;
-            border: 1px solid rgba(255, 210, 0, 0.3);
+            background-color: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+            border: 1px solid rgba(243, 156, 18, 0.4);
         }
 
         .status-warning::before {
-            background-color: var(--status-yellow);
+            background-color: #f39c12;
         }
 
         .status-error {
-            background-color: rgba(235, 0, 0, 0.1);
-            color: var(--status-red);
-            border: 1px solid rgba(235, 0, 0, 0.3);
+            background-color: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.4);
         }
 
         .status-error::before {
-            background-color: var(--status-red);
-        }
-
-        .btn-stryker-primary {
-            background-color: var(--accent-primary);
-            border-color: var(--accent-primary);
-            color: white;
-            font-weight: 500;
-            /* Touch target size: min 50px height (13mm at 96 DPI) */
-            padding: 0.75rem 1.75rem;
-            min-height: 50px;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-        }
-
-        .btn-stryker-primary:hover {
-            background-color: #154566;
-            border-color: #154566;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(28, 86, 135, 0.3);
-        }
-
-        .btn-stryker-secondary {
-            background-color: var(--neutral-white);
-            border: 2px solid var(--accent-button);
-            color: var(--accent-button);
-            font-weight: 500;
-            /* Touch target size: min 50px height (13mm at 96 DPI) */
-            padding: 0.75rem 1.75rem;
-            min-height: 50px;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-        }
-
-        .btn-stryker-secondary:hover {
-            background-color: var(--accent-button);
-            border-color: var(--accent-button);
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(65, 65, 65, 0.3);
+            background-color: #e74c3c;
         }
 
         .button-group {
             display: flex;
-            /* Spacing between buttons: min 6mm (~23px) */
-            gap: 1.5rem;
+            gap: 1rem;
             margin-bottom: 2rem;
             flex-wrap: wrap;
         }
 
         .preview-container {
-            background: var(--neutral-white);
+            background: var(--viewer-card-bg);
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px var(--viewer-shadow);
             min-height: 300px;
+            transition: background-color 0.3s ease;
         }
 
         .preview-header {
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
             font-weight: 600;
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--accent-primary);
+            border-bottom: 2px solid var(--viewer-accent);
         }
 
         #markdownPreview {
             line-height: 1.6;
+            color: var(--viewer-text);
         }
 
         /* Styled Markdown Output */
@@ -229,7 +209,7 @@
         #markdownPreview h4,
         #markdownPreview h5,
         #markdownPreview h6 {
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
             margin-top: 1.5rem;
             margin-bottom: 1rem;
             font-weight: 600;
@@ -237,13 +217,13 @@
 
         #markdownPreview h1 {
             font-size: 2rem;
-            border-bottom: 3px solid var(--accent-primary);
+            border-bottom: 3px solid var(--viewer-accent);
             padding-bottom: 0.5rem;
         }
 
         #markdownPreview h2 {
             font-size: 1.75rem;
-            border-bottom: 2px solid var(--neutral-light);
+            border-bottom: 2px solid var(--viewer-border);
             padding-bottom: 0.4rem;
         }
 
@@ -256,17 +236,17 @@
         }
 
         #markdownPreview code {
-            background-color: var(--neutral-lightest);
+            background-color: var(--viewer-code-bg);
             padding: 0.2rem 0.4rem;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
-            color: var(--accent-primary);
+            color: var(--viewer-accent);
         }
 
         #markdownPreview pre {
-            background-color: var(--accent-button);
-            color: white;
+            background-color: var(--viewer-pre-bg);
+            color: var(--viewer-pre-text);
             padding: 1rem;
             border-radius: 6px;
             overflow-x: auto;
@@ -275,26 +255,26 @@
 
         #markdownPreview pre code {
             background-color: transparent;
-            color: white;
+            color: var(--viewer-pre-text);
             padding: 0;
         }
 
         #markdownPreview blockquote {
-            border-left: 4px solid var(--accent-primary);
+            border-left: 4px solid var(--viewer-accent);
             padding-left: 1rem;
             margin-left: 0;
-            color: var(--neutral-darkest);
+            color: var(--viewer-text-muted);
         }
 
         #markdownPreview a {
-            color: var(--accent-primary);
+            color: var(--viewer-link);
             text-decoration: none;
             border-bottom: 1px solid transparent;
             transition: border-color 0.3s ease;
         }
 
         #markdownPreview a:hover {
-            border-bottom-color: var(--accent-primary);
+            border-bottom-color: var(--viewer-link);
         }
 
         #markdownPreview ul,
@@ -315,19 +295,19 @@
 
         #markdownPreview th,
         #markdownPreview td {
-            border: 1px solid var(--neutral-light);
+            border: 1px solid var(--viewer-border);
             padding: 0.75rem;
             text-align: left;
         }
 
         #markdownPreview th {
-            background-color: var(--accent-primary);
+            background-color: var(--viewer-table-header);
             color: white;
             font-weight: 600;
         }
 
         #markdownPreview tr:nth-child(even) {
-            background-color: var(--neutral-lightest);
+            background-color: var(--viewer-table-stripe);
         }
 
         #markdownPreview img {
@@ -340,45 +320,107 @@
         #markdownPreview hr {
             border: 0;
             height: 2px;
-            background: linear-gradient(to right, var(--accent-primary), var(--accent-button));
+            background: var(--viewer-accent);
             margin: 2rem 0;
         }
 
         .empty-state {
             text-align: left;
-            color: var(--neutral-dark);
+            color: var(--viewer-text-muted);
             padding: 3rem 0;
         }
 
         footer {
             text-align: left;
             padding: 2rem 0;
-            color: var(--neutral-darkest);
+            color: var(--viewer-text-muted);
             font-size: 0.9rem;
         }
 
         /* Form label styling */
         .form-label {
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
+        }
+
+        /* Theme toggle styling */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle .form-check-input {
+            width: 3rem;
+            height: 1.5rem;
+        }
+
+        .theme-icon {
+            font-size: 1.2rem;
         }
 
         /* Side-by-Side Layout Styles */
         .mode-side-by-side .view-mode-container {
             display: flex;
-            gap: 1.5rem;
             align-items: stretch;
-            height: calc(100vh - 180px); /* Adjust based on header/footer height */
+            height: calc(100vh - 180px);
             min-height: 500px;
+            gap: 0;
         }
 
-        .mode-side-by-side .editor-container,
+        .mode-side-by-side .editor-container {
+            flex: 0 0 50%;
+            margin-bottom: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px 0 0 8px;
+        }
+
         .mode-side-by-side .preview-container {
             flex: 1;
             margin-bottom: 0;
-            overflow: hidden; /* Manage internal scrolling */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            width: 50%; /* Explicitly set width to enforce even split */
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Resizable Divider */
+        .resize-divider {
+            display: none;
+            width: 8px;
+            background-color: var(--viewer-divider-bg);
+            cursor: col-resize;
+            flex-shrink: 0;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+
+        .resize-divider:hover,
+        .resize-divider.dragging {
+            background-color: var(--viewer-divider-hover);
+        }
+
+        .resize-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 40px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 3px,
+                var(--viewer-card-bg) 3px,
+                var(--viewer-card-bg) 6px
+            );
+            border-radius: 2px;
+        }
+
+        .mode-side-by-side .resize-divider {
+            display: block;
         }
 
         .mode-side-by-side .textarea-wrapper {
@@ -390,15 +432,15 @@
 
         .mode-side-by-side #markdownInput {
             flex: 1;
-            resize: none; /* Disable manual resize in side-by-side mode */
-            height: 100% !important; /* Override min-height */
+            resize: none;
+            height: 100% !important;
             min-height: 0;
         }
 
         .mode-side-by-side #markdownPreview {
             overflow-y: auto;
             flex: 1;
-            padding-right: 0.5rem; /* Add some padding for scrollbar */
+            padding-right: 0.5rem;
         }
 
         /* Custom Scrollbar for side-by-side panels */
@@ -410,24 +452,112 @@
 
         .mode-side-by-side #markdownInput::-webkit-scrollbar-track,
         .mode-side-by-side #markdownPreview::-webkit-scrollbar-track {
-            background: var(--neutral-lightest);
+            background: var(--viewer-bg);
             border-radius: 4px;
         }
 
         .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb,
         .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb {
-            background: var(--neutral-medium);
+            background: var(--viewer-divider-bg);
             border-radius: 4px;
         }
 
         .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb:hover,
         .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb:hover {
-            background: var(--neutral-dark);
+            background: var(--viewer-divider-hover);
         }
 
         /* Hide elements that might clutter side-by-side view if needed */
         .mode-side-by-side .header {
             margin-bottom: 1rem;
+        }
+
+        /* Prevent text selection while dragging divider */
+        body.resizing {
+            user-select: none;
+            cursor: col-resize;
+        }
+
+        /* Resizable Mermaid Diagram Container */
+        .mermaid-container {
+            position: relative;
+            display: inline-block;
+            min-width: 200px;
+            max-width: 100%;
+            margin: 1rem 0;
+            border: 2px solid var(--viewer-border);
+            border-radius: 6px;
+            background-color: var(--viewer-card-bg);
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            padding: 1rem;
+            overflow: auto;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .mermaid-resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 12px;
+            background-color: var(--viewer-divider-bg);
+            cursor: ew-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .mermaid-resize-handle:hover,
+        .mermaid-resize-handle.dragging {
+            background-color: var(--viewer-accent);
+        }
+
+        .mermaid-resize-handle::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 3px,
+                var(--viewer-card-bg) 3px,
+                var(--viewer-card-bg) 6px
+            );
+            border-radius: 2px;
+        }
+
+        .mermaid-width-indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background-color: var(--viewer-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .mermaid-container:hover .mermaid-width-indicator {
+            opacity: 1;
+        }
+
+        /* Prevent text selection while resizing mermaid */
+        body.resizing-mermaid {
+            user-select: none;
+            cursor: ew-resize;
         }
 
         /* Responsive override: Disable side-by-side on small screens */
@@ -438,9 +568,14 @@
             }
             .mode-side-by-side .editor-container,
             .mode-side-by-side .preview-container {
-                width: 100%;
+                width: 100% !important;
+                flex: none;
                 overflow: visible;
                 height: auto;
+                border-radius: 8px;
+            }
+            .mode-side-by-side .editor-container {
+                margin-bottom: 2rem;
             }
             .mode-side-by-side #markdownInput {
                 height: auto !important;
@@ -448,6 +583,9 @@
             }
             .mode-side-by-side #markdownPreview {
                 overflow-y: visible;
+            }
+            .mode-side-by-side .resize-divider {
+                display: none;
             }
         }
     </style>
@@ -459,14 +597,17 @@
                 <h1>View Scrubbai</h1>
                 <p>Professional Markdown Viewer & Editor</p>
             </div>
-            <div class="settings-panel d-flex align-items-center gap-3 mt-3 mt-md-0">
+            <div class="settings-panel d-flex align-items-center gap-4 mt-3 mt-md-0">
                 <div class="form-check form-switch d-none d-md-block">
                     <input class="form-check-input" type="checkbox" id="layoutToggle">
                     <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
                 </div>
-                <div id="widthControl" class="d-none d-flex align-items-center gap-2">
-                    <label for="widthSlider" class="form-label mb-0 small text-nowrap">Width:</label>
-                    <input type="range" class="form-range" id="widthSlider" min="50" max="100" value="80" style="width: 100px;">
+                <div class="theme-toggle">
+                    <span class="theme-icon" id="sunIcon">&#9728;</span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="themeToggle">
+                    </div>
+                    <span class="theme-icon" id="moonIcon">&#9790;</span>
                 </div>
             </div>
         </div>
@@ -476,7 +617,7 @@
         <div class="view-mode-container">
             <div class="editor-container">
                 <div class="textarea-wrapper">
-                    <label for="markdownInput" class="form-label fw-bold" style="color: var(--stryker-navy);">
+                    <label for="markdownInput" class="form-label fw-bold">
                         Markdown Editor
                     </label>
                     <textarea
@@ -492,14 +633,14 @@
                 </div>
 
                 <div class="button-group">
-                    <button id="clearBtn" class="btn btn-stryker-secondary">
+                    <button id="clearBtn" class="btn btn-outline-secondary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
                             <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                             <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                         </svg>
                         Clear
                     </button>
-                    <button id="rerenderBtn" class="btn btn-stryker-primary">
+                    <button id="rerenderBtn" class="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
                             <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
                             <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
@@ -509,8 +650,10 @@
                 </div>
             </div>
 
+            <div class="resize-divider" id="resizeDivider"></div>
+
             <div class="preview-container">
-                <h2 class="preview-header fw-bold" style="color: var(--stryker-navy); font-size: 1rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">
+                <h2 class="preview-header fw-bold" style="font-size: 1rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">
                     Preview
                 </h2>
                 <div id="markdownPreview" class="empty-state">
@@ -522,7 +665,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 View Scrubbai. Built with marked.js and Bootstrap 5.</p>
+            <p>&copy; 2024 View Scrubbai. Built with markdown-it and Bootstrap 5.</p>
         </div>
     </footer>
 
@@ -530,30 +673,90 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
     <script>
-        // Initialize Mermaid
-        mermaid.initialize({ startOnLoad: false });
+        // =====================================================
+        // MARKDOWN-IT CONFIGURATION WITH SOURCE LINE INJECTION
+        // =====================================================
 
-        // Configure custom renderer for marked
-        const renderer = new marked.Renderer();
-        const originalCodeRenderer = renderer.code.bind(renderer);
-        renderer.code = function(code, language, isEscaped) {
-            if (language === 'mermaid') {
-                return '<div class="mermaid">' + code + '</div>';
-            }
-            return originalCodeRenderer(code, language, isEscaped);
-        };
-
-        // Initialize marked.js configuration
-        marked.setOptions({
+        // Initialize markdown-it with GFM-like options
+        const md = window.markdownit({
+            html: true,
             breaks: true,
-            gfm: true,
-            headerIds: true,
-            mangle: false,
-            sanitize: false,
-            renderer: renderer
+            linkify: true,
+            typographer: false
         });
 
-        // DOM elements
+        // Store the default fence renderer
+        const defaultFenceRenderer = md.renderer.rules.fence || function(tokens, idx, options, env, self) {
+            return self.renderToken(tokens, idx, options);
+        };
+
+        // Default Mermaid width
+        const DEFAULT_MERMAID_WIDTH = 600;
+
+        // Custom fence renderer for Mermaid support with resizable container
+        md.renderer.rules.fence = function(tokens, idx, options, env, self) {
+            const token = tokens[idx];
+            const info = token.info ? token.info.trim() : '';
+            const parts = info.split(/\s+/g);
+            const lang = parts[0];
+
+            if (lang === 'mermaid') {
+                const line = token.map ? token.map[0] : 0;
+
+                // Parse optional width from info string: ```mermaid width=500
+                let width = DEFAULT_MERMAID_WIDTH;
+                for (let i = 1; i < parts.length; i++) {
+                    const match = parts[i].match(/^width=(\d+)$/);
+                    if (match) {
+                        width = parseInt(match[1], 10);
+                    }
+                }
+
+                // Wrap in resizable container
+                return `<div class="mermaid-container" data-source-line="${line}" style="width: ${width}px;">
+                    <span class="mermaid-width-indicator">${width}px</span>
+                    <div class="mermaid">${md.utils.escapeHtml(token.content)}</div>
+                    <div class="mermaid-resize-handle" title="Drag to resize"></div>
+                </div>`;
+            }
+
+            // For other code blocks, add source line and use default rendering
+            const line = token.map ? token.map[0] : 0;
+            const langClass = lang ? ` class="language-${lang}"` : '';
+            const escaped = md.utils.escapeHtml(token.content);
+            return `<pre data-source-line="${line}"><code${langClass}>${escaped}</code></pre>`;
+        };
+
+        // Inject source line numbers into block-level elements (VS Code approach)
+        // This adds data-source-line attributes to rendered HTML for scroll sync
+        md.core.ruler.push('source_line_injector', function(state) {
+            for (let i = 0; i < state.tokens.length; i++) {
+                const token = state.tokens[i];
+                // Add line info to block tokens that have map info
+                if (token.map && token.nesting >= 0) {
+                    token.attrSet('data-source-line', String(token.map[0]));
+                    token.attrJoin('class', 'source-line');
+                }
+            }
+        });
+
+        // Initialize Mermaid with sensible defaults
+        mermaid.initialize({
+            startOnLoad: false,
+            flowchart: { useMaxWidth: true, htmlLabels: true },
+            sequence: { useMaxWidth: true },
+            gantt: { useMaxWidth: true },
+            journey: { useMaxWidth: true },
+            class: { useMaxWidth: true },
+            state: { useMaxWidth: true },
+            er: { useMaxWidth: true },
+            pie: { useMaxWidth: true }
+        });
+
+        // =====================================================
+        // DOM ELEMENTS
+        // =====================================================
+
         const markdownInput = document.getElementById('markdownInput');
         const markdownPreview = document.getElementById('markdownPreview');
         const statusIndicator = document.getElementById('statusIndicator');
@@ -561,112 +764,451 @@
         const rerenderBtn = document.getElementById('rerenderBtn');
 
         const layoutToggle = document.getElementById('layoutToggle');
-        const widthSlider = document.getElementById('widthSlider');
-        const widthControl = document.getElementById('widthControl');
         const mainContainer = document.getElementById('mainContainer');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeStylesheet = document.getElementById('theme-stylesheet');
+        const resizeDivider = document.getElementById('resizeDivider');
+        const editorContainer = document.querySelector('.editor-container');
+        const previewContainer = document.querySelector('.preview-container');
+
+        // Theme URLs
+        const THEME_LIGHT = 'https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/flatly/bootstrap.min.css';
+        const THEME_DARK = 'https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css';
 
         // Debounce timer
         let debounceTimer;
 
-        // View Mode Handlers
+        // =====================================================
+        // SCROLL SYNC WITH SOURCE LINE MAPPING & INTERPOLATION
+        // =====================================================
+
+        // Cache for scroll sync mapping (rebuilt on render)
+        let scrollSyncMap = null;
+
+        /**
+         * Build a mapping between editor lines and preview element positions
+         * This enables accurate scroll synchronization
+         */
+        function buildScrollSyncMap() {
+            const elements = markdownPreview.querySelectorAll('[data-source-line]');
+            const map = [];
+
+            elements.forEach(el => {
+                const line = parseInt(el.getAttribute('data-source-line'), 10);
+                const rect = el.getBoundingClientRect();
+                const previewRect = markdownPreview.getBoundingClientRect();
+                // Position relative to preview container's scroll
+                const top = rect.top - previewRect.top + markdownPreview.scrollTop;
+                map.push({ line, top, element: el });
+            });
+
+            // Sort by line number
+            map.sort((a, b) => a.line - b.line);
+
+            return map;
+        }
+
+        /**
+         * Get the line height in the editor (approximate)
+         */
+        function getEditorLineHeight() {
+            const style = window.getComputedStyle(markdownInput);
+            const lineHeight = parseFloat(style.lineHeight);
+            if (!isNaN(lineHeight)) return lineHeight;
+            // Fallback: estimate based on font size
+            const fontSize = parseFloat(style.fontSize);
+            return fontSize * 1.4;
+        }
+
+        /**
+         * Get the current line number at the top of the editor viewport
+         */
+        function getEditorTopLine() {
+            const lineHeight = getEditorLineHeight();
+            const scrollTop = markdownInput.scrollTop;
+            return scrollTop / lineHeight;
+        }
+
+        /**
+         * Calculate preview scroll position for a given editor line using interpolation
+         */
+        function getPreviewScrollForLine(line) {
+            if (!scrollSyncMap || scrollSyncMap.length === 0) {
+                return null;
+            }
+
+            // Find surrounding mapped elements for interpolation
+            let before = null;
+            let after = null;
+
+            for (let i = 0; i < scrollSyncMap.length; i++) {
+                if (scrollSyncMap[i].line <= line) {
+                    before = scrollSyncMap[i];
+                }
+                if (scrollSyncMap[i].line >= line && after === null) {
+                    after = scrollSyncMap[i];
+                }
+            }
+
+            // Edge cases
+            if (!before && !after) return 0;
+            if (!before) return after.top;
+            if (!after) return before.top;
+            if (before === after) return before.top;
+
+            // Linear interpolation between the two anchor points
+            const lineRange = after.line - before.line;
+            const posRange = after.top - before.top;
+            const lineDelta = line - before.line;
+            const ratio = lineRange > 0 ? lineDelta / lineRange : 0;
+
+            return before.top + (ratio * posRange);
+        }
+
+        /**
+         * Calculate editor scroll position for a given preview scroll position using interpolation
+         */
+        function getEditorScrollForPreviewPosition(previewScrollTop) {
+            if (!scrollSyncMap || scrollSyncMap.length === 0) {
+                return null;
+            }
+
+            // Find surrounding mapped elements for interpolation
+            let before = null;
+            let after = null;
+
+            for (let i = 0; i < scrollSyncMap.length; i++) {
+                if (scrollSyncMap[i].top <= previewScrollTop) {
+                    before = scrollSyncMap[i];
+                }
+                if (scrollSyncMap[i].top >= previewScrollTop && after === null) {
+                    after = scrollSyncMap[i];
+                }
+            }
+
+            // Edge cases
+            if (!before && !after) return 0;
+            if (!before) return after.line * getEditorLineHeight();
+            if (!after) return before.line * getEditorLineHeight();
+            if (before === after) return before.line * getEditorLineHeight();
+
+            // Linear interpolation between the two anchor points
+            const posRange = after.top - before.top;
+            const lineRange = after.line - before.line;
+            const posDelta = previewScrollTop - before.top;
+            const ratio = posRange > 0 ? posDelta / posRange : 0;
+
+            const targetLine = before.line + (ratio * lineRange);
+            return targetLine * getEditorLineHeight();
+        }
+
+        // Scroll sync state
+        let isSyncingFromEditor = false;
+        let isSyncingFromPreview = false;
+        let scrollSyncAnimationFrame = null;
+
+        /**
+         * Sync preview scroll when editor scrolls (with interpolation)
+         */
+        function syncEditorToPreview() {
+            if (!layoutToggle.checked) return;
+            if (isSyncingFromPreview) {
+                isSyncingFromPreview = false;
+                return;
+            }
+
+            // Cancel any pending animation frame
+            if (scrollSyncAnimationFrame) {
+                cancelAnimationFrame(scrollSyncAnimationFrame);
+            }
+
+            scrollSyncAnimationFrame = requestAnimationFrame(() => {
+                isSyncingFromEditor = true;
+
+                // Rebuild map if needed (could cache and invalidate on render)
+                if (!scrollSyncMap) {
+                    scrollSyncMap = buildScrollSyncMap();
+                }
+
+                const currentLine = getEditorTopLine();
+                const targetScroll = getPreviewScrollForLine(currentLine);
+
+                if (targetScroll !== null) {
+                    markdownPreview.scrollTop = targetScroll;
+                }
+
+                // Reset flag after a short delay to allow the scroll event to fire
+                setTimeout(() => { isSyncingFromEditor = false; }, 50);
+            });
+        }
+
+        /**
+         * Sync editor scroll when preview scrolls (with interpolation)
+         */
+        function syncPreviewToEditor() {
+            if (!layoutToggle.checked) return;
+            if (isSyncingFromEditor) {
+                isSyncingFromEditor = false;
+                return;
+            }
+
+            // Cancel any pending animation frame
+            if (scrollSyncAnimationFrame) {
+                cancelAnimationFrame(scrollSyncAnimationFrame);
+            }
+
+            scrollSyncAnimationFrame = requestAnimationFrame(() => {
+                isSyncingFromPreview = true;
+
+                // Rebuild map if needed
+                if (!scrollSyncMap) {
+                    scrollSyncMap = buildScrollSyncMap();
+                }
+
+                const targetScroll = getEditorScrollForPreviewPosition(markdownPreview.scrollTop);
+
+                if (targetScroll !== null) {
+                    markdownInput.scrollTop = targetScroll;
+                }
+
+                // Reset flag after a short delay
+                setTimeout(() => { isSyncingFromPreview = false; }, 50);
+            });
+        }
+
+        /**
+         * Invalidate scroll sync map (call after rendering)
+         */
+        function invalidateScrollSyncMap() {
+            scrollSyncMap = null;
+        }
+
+        function initScrollSync() {
+            // Rebuild map after layout settles
+            setTimeout(() => {
+                scrollSyncMap = buildScrollSyncMap();
+            }, 100);
+
+            markdownInput.addEventListener('scroll', syncEditorToPreview);
+            markdownPreview.addEventListener('scroll', syncPreviewToEditor);
+        }
+
+        function removeScrollSync() {
+            markdownInput.removeEventListener('scroll', syncEditorToPreview);
+            markdownPreview.removeEventListener('scroll', syncPreviewToEditor);
+
+            isSyncingFromEditor = false;
+            isSyncingFromPreview = false;
+            scrollSyncMap = null;
+        }
+
+        // =====================================================
+        // THEME HANDLING
+        // =====================================================
+
+        function setTheme(isDark) {
+            const mermaidConfig = {
+                startOnLoad: false,
+                theme: isDark ? 'dark' : 'default',
+                flowchart: { useMaxWidth: true, htmlLabels: true },
+                sequence: { useMaxWidth: true },
+                gantt: { useMaxWidth: true },
+                journey: { useMaxWidth: true },
+                class: { useMaxWidth: true },
+                state: { useMaxWidth: true },
+                er: { useMaxWidth: true },
+                pie: { useMaxWidth: true }
+            };
+
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeStylesheet.href = THEME_DARK;
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeStylesheet.href = THEME_LIGHT;
+            }
+
+            mermaid.initialize(mermaidConfig);
+            renderMarkdown();
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                themeToggle.checked = true;
+                setTheme(true);
+            }
+        }
+
+        // =====================================================
+        // LAYOUT TOGGLE
+        // =====================================================
+
         function toggleLayout() {
             const isSideBySide = layoutToggle.checked;
 
             if (isSideBySide) {
                 document.body.classList.add('mode-side-by-side');
-                widthControl.classList.remove('d-none');
-
-                // Set initial container width from slider
-                updateContainerWidth();
-
-                // Initialize scroll sync
+                editorContainer.style.flex = '0 0 50%';
                 initScrollSync();
             } else {
                 document.body.classList.remove('mode-side-by-side');
-                widthControl.classList.add('d-none');
-
-                // Reset container width
-                mainContainer.style.maxWidth = '';
-
-                // Remove scroll sync
+                editorContainer.style.flex = '';
                 removeScrollSync();
             }
         }
 
-        function updateContainerWidth() {
+        // =====================================================
+        // RESIZABLE DIVIDER
+        // =====================================================
+
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        function startResize(e) {
+            if (!layoutToggle.checked) return;
+            isResizing = true;
+            startX = e.clientX || e.touches[0].clientX;
+            startWidth = editorContainer.offsetWidth;
+            document.body.classList.add('resizing');
+            resizeDivider.classList.add('dragging');
+
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+            document.addEventListener('touchmove', doResize);
+            document.addEventListener('touchend', stopResize);
+        }
+
+        function doResize(e) {
+            if (!isResizing) return;
+            e.preventDefault();
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const container = document.querySelector('.view-mode-container');
+            const containerRect = container.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+
+            const newWidth = startWidth + (clientX - startX);
+            const minWidth = containerWidth * 0.2;
+            const maxWidth = containerWidth * 0.8;
+
+            const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+            const percentage = (clampedWidth / containerWidth) * 100;
+
+            editorContainer.style.flex = `0 0 ${percentage}%`;
+        }
+
+        function stopResize() {
+            isResizing = false;
+            document.body.classList.remove('resizing');
+            resizeDivider.classList.remove('dragging');
+
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+            document.removeEventListener('touchmove', doResize);
+            document.removeEventListener('touchend', stopResize);
+
+            // Rebuild scroll sync map after resize
             if (layoutToggle.checked) {
-                const width = widthSlider.value;
-                mainContainer.style.maxWidth = `${width}%`;
+                invalidateScrollSyncMap();
+                scrollSyncMap = buildScrollSyncMap();
             }
         }
 
-        // Scroll Sync Logic
-        let isSyncingLeftScroll = false;
-        let isSyncingRightScroll = false;
+        // =====================================================
+        // MERMAID DIAGRAM RESIZING
+        // =====================================================
 
-        function syncScrollLeft(e) {
-            if (!layoutToggle.checked) return;
-            if (isSyncingLeftScroll) {
-                isSyncingLeftScroll = false;
-                return;
-            }
-
-            isSyncingRightScroll = true;
-
-            // Calculate percentage
-            const percentage = markdownInput.scrollTop / (markdownInput.scrollHeight - markdownInput.offsetHeight);
-
-            // Apply to preview
-            markdownPreview.scrollTop = percentage * (markdownPreview.scrollHeight - markdownPreview.offsetHeight);
-        }
-
-        function syncScrollRight(e) {
-            if (!layoutToggle.checked) return;
-            if (isSyncingRightScroll) {
-                isSyncingRightScroll = false;
-                return;
-            }
-
-            isSyncingLeftScroll = true;
-
-            // Calculate percentage
-            const percentage = markdownPreview.scrollTop / (markdownPreview.scrollHeight - markdownPreview.offsetHeight);
-
-            // Apply to editor
-            markdownInput.scrollTop = percentage * (markdownInput.scrollHeight - markdownInput.offsetHeight);
-        }
-
-        function initScrollSync() {
-            markdownInput.addEventListener('scroll', syncScrollLeft);
-            markdownPreview.addEventListener('scroll', syncScrollRight);
-        }
-
-        function removeScrollSync() {
-            markdownInput.removeEventListener('scroll', syncScrollLeft);
-            markdownPreview.removeEventListener('scroll', syncScrollRight);
-
-            // Reset flags
-            isSyncingLeftScroll = false;
-            isSyncingRightScroll = false;
-        }
+        let mermaidResizing = false;
+        let mermaidResizeTarget = null;
+        let mermaidStartX = 0;
+        let mermaidStartWidth = 0;
 
         /**
-         * Lint the markdown content and return status
+         * Initialize Mermaid resize handles after rendering
+         * Uses event delegation on the preview container
          */
+        function initMermaidResizeHandlers() {
+            // Use event delegation - listen on preview container
+            markdownPreview.addEventListener('mousedown', handleMermaidResizeStart);
+            markdownPreview.addEventListener('touchstart', handleMermaidResizeStart);
+        }
+
+        function handleMermaidResizeStart(e) {
+            const handle = e.target.closest('.mermaid-resize-handle');
+            if (!handle) return;
+
+            e.preventDefault();
+            mermaidResizing = true;
+            mermaidResizeTarget = handle.closest('.mermaid-container');
+            mermaidStartX = e.clientX || e.touches[0].clientX;
+            mermaidStartWidth = mermaidResizeTarget.offsetWidth;
+
+            document.body.classList.add('resizing-mermaid');
+            handle.classList.add('dragging');
+
+            document.addEventListener('mousemove', handleMermaidResize);
+            document.addEventListener('mouseup', handleMermaidResizeEnd);
+            document.addEventListener('touchmove', handleMermaidResize);
+            document.addEventListener('touchend', handleMermaidResizeEnd);
+        }
+
+        function handleMermaidResize(e) {
+            if (!mermaidResizing || !mermaidResizeTarget) return;
+            e.preventDefault();
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const delta = clientX - mermaidStartX;
+            const newWidth = Math.max(200, Math.min(1200, mermaidStartWidth + delta));
+
+            mermaidResizeTarget.style.width = `${newWidth}px`;
+
+            // Update the width indicator
+            const indicator = mermaidResizeTarget.querySelector('.mermaid-width-indicator');
+            if (indicator) {
+                indicator.textContent = `${Math.round(newWidth)}px`;
+            }
+        }
+
+        function handleMermaidResizeEnd() {
+            if (!mermaidResizing) return;
+
+            const handle = mermaidResizeTarget?.querySelector('.mermaid-resize-handle');
+            if (handle) {
+                handle.classList.remove('dragging');
+            }
+
+            mermaidResizing = false;
+            mermaidResizeTarget = null;
+            document.body.classList.remove('resizing-mermaid');
+
+            document.removeEventListener('mousemove', handleMermaidResize);
+            document.removeEventListener('mouseup', handleMermaidResizeEnd);
+            document.removeEventListener('touchmove', handleMermaidResize);
+            document.removeEventListener('touchend', handleMermaidResizeEnd);
+
+            // Rebuild scroll sync map after mermaid resize
+            if (layoutToggle.checked) {
+                invalidateScrollSyncMap();
+                scrollSyncMap = buildScrollSyncMap();
+            }
+        }
+
+        // =====================================================
+        // MARKDOWN LINTING
+        // =====================================================
+
         function lintMarkdown(content) {
             if (!content.trim()) {
-                return {
-                    status: 'valid',
-                    message: 'Valid markdown - No issues detected'
-                };
+                return { status: 'valid', message: 'Valid markdown - No issues detected' };
             }
 
             const issues = [];
             const lines = content.split('\n');
 
-            // Check for common markdown issues
-
-            // 1. Check for mismatched header levels (skipping levels)
+            // Check for mismatched header levels
             const headerMatches = content.match(/^#{1,6}\s/gm);
             if (headerMatches) {
                 const headerLevels = headerMatches.map(h => h.trim().split(' ')[0].length);
@@ -678,45 +1220,33 @@
                 }
             }
 
-            // 2. Check for unclosed code blocks
+            // Check for unclosed code blocks
             const codeBlockMatches = content.match(/```/g);
             if (codeBlockMatches && codeBlockMatches.length % 2 !== 0) {
-                return {
-                    status: 'error',
-                    message: 'Syntax error - Unclosed code block detected'
-                };
+                return { status: 'error', message: 'Syntax error - Unclosed code block detected' };
             }
 
-            // 3. Check for unclosed inline code
+            // Check for unclosed inline code
             const inlineCodeMatches = content.match(/`/g);
             if (inlineCodeMatches) {
                 let count = 0;
                 for (let line of lines) {
-                    // Ignore code blocks
                     if (line.trim().startsWith('```')) continue;
                     const backticks = (line.match(/`/g) || []).length;
                     count += backticks;
                 }
-                // If we're not in a code block and have odd backticks, it's an error
                 if (!codeBlockMatches && count % 2 !== 0) {
-                    return {
-                        status: 'error',
-                        message: 'Syntax error - Unclosed inline code detected'
-                    };
+                    return { status: 'error', message: 'Syntax error - Unclosed inline code detected' };
                 }
             }
 
-            // 4. Check for malformed links
-            const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
+            // Check for malformed links
             const malformedLinks = content.match(/\[[^\]]*\]\([^)]*$/gm);
             if (malformedLinks) {
-                return {
-                    status: 'error',
-                    message: 'Syntax error - Malformed link detected'
-                };
+                return { status: 'error', message: 'Syntax error - Malformed link detected' };
             }
 
-            // 5. Check for inconsistent list formatting
+            // Check for inconsistent list formatting
             const listItems = content.match(/^\s*[-*+]\s/gm);
             if (listItems) {
                 const markers = listItems.map(item => item.trim()[0]);
@@ -726,34 +1256,24 @@
                 }
             }
 
-            // 6. Check for multiple consecutive blank lines (minor issue)
+            // Check for multiple consecutive blank lines
             if (content.match(/\n\s*\n\s*\n/)) {
                 issues.push('Multiple consecutive blank lines');
             }
 
-            // 7. Check for trailing spaces (minor formatting issue)
+            // Check for trailing spaces
             const trailingSpaces = lines.filter(line => line.match(/\s+$/));
             if (trailingSpaces.length > 2) {
                 issues.push('Excessive trailing spaces');
             }
 
-            // Return status based on issues found
             if (issues.length === 0) {
-                return {
-                    status: 'valid',
-                    message: 'Valid markdown - No issues detected'
-                };
+                return { status: 'valid', message: 'Valid markdown - No issues detected' };
             } else {
-                return {
-                    status: 'warning',
-                    message: `Minor formatting issues - ${issues.join(', ')}`
-                };
+                return { status: 'warning', message: `Minor formatting issues - ${issues.join(', ')}` };
             }
         }
 
-        /**
-         * Update the status indicator
-         */
         function updateStatus(lintResult) {
             statusIndicator.className = 'status-indicator';
 
@@ -772,9 +1292,10 @@
             statusIndicator.textContent = lintResult.message;
         }
 
-        /**
-         * Render markdown to HTML
-         */
+        // =====================================================
+        // RENDER MARKDOWN
+        // =====================================================
+
         function renderMarkdown() {
             const content = markdownInput.value;
 
@@ -782,64 +1303,78 @@
             const lintResult = lintMarkdown(content);
             updateStatus(lintResult);
 
-            // Render the markdown
+            // Render empty state
             if (!content.trim()) {
                 markdownPreview.innerHTML = '<div class="empty-state">Your rendered markdown will appear here...</div>';
+                invalidateScrollSyncMap();
                 return;
             }
 
             try {
-                const html = marked.parse(content);
+                // Render using markdown-it
+                const html = md.render(content);
                 markdownPreview.innerHTML = html;
 
                 // Initialize Mermaid diagrams
                 mermaid.run({
                     nodes: document.querySelectorAll('.mermaid')
                 });
+
+                // Invalidate and rebuild scroll sync map after render
+                invalidateScrollSyncMap();
+                if (layoutToggle.checked) {
+                    // Delay slightly to allow DOM to settle
+                    setTimeout(() => {
+                        scrollSyncMap = buildScrollSyncMap();
+                    }, 100);
+                }
             } catch (error) {
                 markdownPreview.innerHTML = `<div class="alert alert-danger">
                     <strong>Rendering Error:</strong> ${error.message}
                 </div>`;
-                updateStatus({
-                    status: 'error',
-                    message: 'Syntax error - Failed to render markdown'
-                });
+                updateStatus({ status: 'error', message: 'Syntax error - Failed to render markdown' });
             }
         }
 
-        /**
-         * Debounced render function
-         */
         function debouncedRender() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(renderMarkdown, 300);
         }
 
-        /**
-         * Clear the textarea
-         */
         function clearEditor() {
             markdownInput.value = '';
             renderMarkdown();
             markdownInput.focus();
         }
 
-        // Event listeners
+        // =====================================================
+        // EVENT LISTENERS
+        // =====================================================
+
         markdownInput.addEventListener('input', debouncedRender);
         clearBtn.addEventListener('click', clearEditor);
         rerenderBtn.addEventListener('click', renderMarkdown);
 
         layoutToggle.addEventListener('change', toggleLayout);
-        widthSlider.addEventListener('input', updateContainerWidth);
+        themeToggle.addEventListener('change', () => setTheme(themeToggle.checked));
+
+        resizeDivider.addEventListener('mousedown', startResize);
+        resizeDivider.addEventListener('touchstart', startResize);
+
+        // Initialize Mermaid resize handlers (event delegation)
+        initMermaidResizeHandlers();
+
+        // Load saved theme preference
+        loadSavedTheme();
 
         // Initial render
         renderMarkdown();
 
-        // Fallback check for marked.js
-        if (typeof marked === 'undefined') {
+        // Fallback check for markdown-it
+        if (typeof window.markdownit === 'undefined') {
             markdownPreview.innerHTML = `
                 <div class="alert alert-danger">
-                    <strong>Error:</strong> Failed to load marked.js library. Please check your internet connection.
+                    <strong>Error:</strong> Failed to load markdown-it library. Please check your internet connection.
                 </div>
             `;
         }
