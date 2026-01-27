@@ -15,44 +15,44 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
 
     <style>
-        /* Light theme (Flatly) custom properties */
+        /* Light theme (Flatly) custom properties - using Flatly's actual palette */
         :root {
             --viewer-bg: #ecf0f1;
             --viewer-card-bg: #ffffff;
             --viewer-text: #2c3e50;
             --viewer-text-muted: #7b8a8b;
             --viewer-border: #dce4ec;
-            --viewer-primary: #2c3e50;
-            --viewer-accent: #18bc9c;
+            --viewer-primary: #2c3e50;    /* Flatly's primary (dark blue) */
+            --viewer-accent: #2c3e50;     /* Match primary for consistency */
             --viewer-code-bg: #ecf0f1;
             --viewer-pre-bg: #2c3e50;
             --viewer-pre-text: #ecf0f1;
-            --viewer-link: #18bc9c;
+            --viewer-link: #3498db;       /* Flatly's info color (readable blue) */
             --viewer-table-header: #2c3e50;
             --viewer-table-stripe: #f8f9fa;
             --viewer-shadow: rgba(0, 0, 0, 0.08);
             --viewer-divider-bg: #bdc3c7;
-            --viewer-divider-hover: #95a5a6;
+            --viewer-divider-hover: #2c3e50;
         }
 
-        /* Dark theme (Darkly) custom properties */
+        /* Dark theme (Darkly) custom properties - using Darkly's actual palette */
         [data-theme="dark"] {
             --viewer-bg: #222222;
             --viewer-card-bg: #303030;
-            --viewer-text: #ffffff;
+            --viewer-text: #fff;
             --viewer-text-muted: #adb5bd;
             --viewer-border: #444444;
-            --viewer-primary: #00bc8c;
-            --viewer-accent: #00bc8c;
+            --viewer-primary: #375a7f;    /* Darkly's actual primary (blue) */
+            --viewer-accent: #375a7f;     /* Match primary for consistency */
             --viewer-code-bg: #444444;
             --viewer-pre-bg: #1a1a1a;
-            --viewer-pre-text: #ffffff;
-            --viewer-link: #00bc8c;
-            --viewer-table-header: #00bc8c;
+            --viewer-pre-text: #fff;
+            --viewer-link: #3498db;       /* Darkly's info color (readable blue) */
+            --viewer-table-header: #375a7f;
             --viewer-table-stripe: #3a3a3a;
             --viewer-shadow: rgba(0, 0, 0, 0.3);
             --viewer-divider-bg: #555555;
-            --viewer-divider-hover: #00bc8c;
+            --viewer-divider-hover: #375a7f;
         }
 
         body {
@@ -115,7 +115,7 @@
         #markdownInput:focus {
             outline: none;
             border-color: var(--viewer-accent);
-            box-shadow: 0 0 0 0.2rem rgba(24, 188, 156, 0.25);
+            box-shadow: 0 0 0 0.2rem rgba(55, 90, 127, 0.25);
         }
 
         .status-indicator {
