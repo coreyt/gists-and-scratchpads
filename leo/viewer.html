@@ -343,19 +343,37 @@
         }
 
         /* Theme toggle styling */
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .theme-toggle .form-check-input {
-            width: 3rem;
-            height: 1.5rem;
-        }
-
         .theme-icon {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Settings dropdown styling */
+        .dropdown-menu {
+            min-width: 200px;
+            background-color: var(--viewer-card-bg);
+            border-color: var(--viewer-border);
+        }
+
+        .dropdown-item-text {
+            color: var(--viewer-text);
+            padding: 0.5rem 1rem;
+        }
+
+        .dropdown-divider {
+            border-color: var(--viewer-border);
+        }
+
+        /* Swapped sides layout */
+        .mode-swapped .view-mode-container {
+            flex-direction: row-reverse;
+        }
+
+        .mode-swapped .editor-container {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .mode-swapped .preview-container {
+            border-radius: 8px 0 0 8px;
         }
 
         /* Side-by-Side Layout Styles */
@@ -597,18 +615,39 @@
                 <h1>View Scrubbai</h1>
                 <p>Professional Markdown Viewer & Editor</p>
             </div>
-            <div class="settings-panel d-flex align-items-center gap-4 mt-3 mt-md-0">
-                <div class="form-check form-switch d-none d-md-block">
-                    <input class="form-check-input" type="checkbox" id="layoutToggle">
-                    <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
-                </div>
-                <div class="theme-toggle">
-                    <span class="theme-icon" id="sunIcon">&#9728;</span>
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" id="themeToggle">
-                    </div>
-                    <span class="theme-icon" id="moonIcon">&#9790;</span>
-                </div>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                    </svg>
+                    Settings
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                    <li class="dropdown-item-text">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="layoutToggle">
+                            <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item-text">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="swapSidesToggle">
+                            <label class="form-check-label" for="swapSidesToggle">Swap Sides</label>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="dropdown-item-text">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="theme-icon">&#9728;</span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="themeToggle">
+                            </div>
+                            <span class="theme-icon">&#9790;</span>
+                            <span class="ms-1">Theme</span>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -780,226 +819,393 @@
 
         // =====================================================
         // SCROLL SYNC WITH SOURCE LINE MAPPING & INTERPOLATION
+        // (Based on Joplin's SyncScrollMap approach)
         // =====================================================
 
-        // Cache for scroll sync mapping (rebuilt on render)
-        let scrollSyncMap = null;
+        /**
+         * SyncScrollMap - Manages mapping between editor lines and preview positions
+         * Uses percentage-based positions for GUI-independence
+         * Implements binary search for efficient lookups
+         */
+        class SyncScrollMap {
+            constructor() {
+                this.map = null; // Array of {line, percent} sorted by line
+                this.valid = false;
+            }
+
+            /**
+             * Build the mapping from source lines to preview scroll percentages
+             */
+            build() {
+                const elements = markdownPreview.querySelectorAll('[data-source-line]');
+                const previewScrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
+
+                if (previewScrollHeight <= 0 || elements.length === 0) {
+                    this.map = [];
+                    this.valid = true;
+                    return;
+                }
+
+                const entries = [];
+                const previewRect = markdownPreview.getBoundingClientRect();
+
+                elements.forEach(el => {
+                    const line = parseInt(el.getAttribute('data-source-line'), 10);
+                    if (isNaN(line)) return;
+
+                    const rect = el.getBoundingClientRect();
+                    // Position relative to preview container
+                    const top = rect.top - previewRect.top + markdownPreview.scrollTop;
+                    // Convert to percentage (0 to 1)
+                    const percent = Math.max(0, Math.min(1, top / previewScrollHeight));
+
+                    entries.push({ line, percent });
+                });
+
+                // Sort by line number and remove duplicates (keep first occurrence)
+                entries.sort((a, b) => a.line - b.line);
+                this.map = [];
+                let lastLine = -1;
+                for (const entry of entries) {
+                    if (entry.line !== lastLine) {
+                        this.map.push(entry);
+                        lastLine = entry.line;
+                    }
+                }
+
+                this.valid = true;
+            }
+
+            /**
+             * Invalidate the map (will be rebuilt on next use)
+             */
+            invalidate() {
+                this.valid = false;
+                this.map = null;
+            }
+
+            /**
+             * Binary search to find the rightmost index where map[i].line <= targetLine
+             * Returns -1 if all lines are greater than target
+             */
+            binarySearchByLine(targetLine) {
+                if (!this.map || this.map.length === 0) return -1;
+
+                let left = 0;
+                let right = this.map.length - 1;
+                let result = -1;
+
+                while (left <= right) {
+                    const mid = Math.floor((left + right) / 2);
+                    if (this.map[mid].line <= targetLine) {
+                        result = mid;
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
+                }
+
+                return result;
+            }
+
+            /**
+             * Binary search to find the rightmost index where map[i].percent <= targetPercent
+             */
+            binarySearchByPercent(targetPercent) {
+                if (!this.map || this.map.length === 0) return -1;
+
+                let left = 0;
+                let right = this.map.length - 1;
+                let result = -1;
+
+                while (left <= right) {
+                    const mid = Math.floor((left + right) / 2);
+                    if (this.map[mid].percent <= targetPercent) {
+                        result = mid;
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
+                }
+
+                return result;
+            }
+
+            /**
+             * Translate editor line to preview scroll percentage using linear interpolation
+             */
+            lineToPreviewPercent(line) {
+                if (!this.valid) this.build();
+                if (!this.map || this.map.length === 0) return null;
+
+                // Edge cases
+                if (line <= this.map[0].line) return this.map[0].percent;
+                if (line >= this.map[this.map.length - 1].line) return this.map[this.map.length - 1].percent;
+
+                // Binary search for the bracket
+                const lowerIdx = this.binarySearchByLine(line);
+                if (lowerIdx < 0) return this.map[0].percent;
+
+                const upperIdx = lowerIdx + 1;
+                if (upperIdx >= this.map.length) return this.map[lowerIdx].percent;
+
+                const lower = this.map[lowerIdx];
+                const upper = this.map[upperIdx];
+
+                // Exact match
+                if (lower.line === line) return lower.percent;
+
+                // Linear interpolation
+                const lineRange = upper.line - lower.line;
+                if (lineRange === 0) return lower.percent;
+
+                const ratio = (line - lower.line) / lineRange;
+                return lower.percent + ratio * (upper.percent - lower.percent);
+            }
+
+            /**
+             * Translate preview scroll percentage to editor line using linear interpolation
+             */
+            previewPercentToLine(percent) {
+                if (!this.valid) this.build();
+                if (!this.map || this.map.length === 0) return null;
+
+                // Clamp percent
+                percent = Math.max(0, Math.min(1, percent));
+
+                // Edge cases
+                if (percent <= this.map[0].percent) return this.map[0].line;
+                if (percent >= this.map[this.map.length - 1].percent) return this.map[this.map.length - 1].line;
+
+                // Binary search for the bracket
+                const lowerIdx = this.binarySearchByPercent(percent);
+                if (lowerIdx < 0) return this.map[0].line;
+
+                const upperIdx = lowerIdx + 1;
+                if (upperIdx >= this.map.length) return this.map[lowerIdx].line;
+
+                const lower = this.map[lowerIdx];
+                const upper = this.map[upperIdx];
+
+                // Exact match
+                if (lower.percent === percent) return lower.line;
+
+                // Linear interpolation
+                const percentRange = upper.percent - lower.percent;
+                if (percentRange === 0) return lower.line;
+
+                const ratio = (percent - lower.percent) / percentRange;
+                return lower.line + ratio * (upper.line - lower.line);
+            }
+        }
+
+        // Scroll sync state
+        const syncScrollMap = new SyncScrollMap();
+        let ignoreNextEditorScroll = false;
+        let ignoreNextPreviewScroll = false;
+        let editorScrollTimeoutId = null;
+        let previewScrollTimeoutId = null;
+        let resizeObserver = null;
+
+        // Debounce delay for scroll events (ms)
+        const SCROLL_SYNC_DEBOUNCE = 10;
 
         /**
-         * Build a mapping between editor lines and preview element positions
-         * This enables accurate scroll synchronization
+         * Get editor scroll position as percentage (0 to 1)
          */
-        function buildScrollSyncMap() {
-            const elements = markdownPreview.querySelectorAll('[data-source-line]');
-            const map = [];
-
-            elements.forEach(el => {
-                const line = parseInt(el.getAttribute('data-source-line'), 10);
-                const rect = el.getBoundingClientRect();
-                const previewRect = markdownPreview.getBoundingClientRect();
-                // Position relative to preview container's scroll
-                const top = rect.top - previewRect.top + markdownPreview.scrollTop;
-                map.push({ line, top, element: el });
-            });
-
-            // Sort by line number
-            map.sort((a, b) => a.line - b.line);
-
-            return map;
+        function getEditorScrollPercent() {
+            const scrollHeight = markdownInput.scrollHeight - markdownInput.clientHeight;
+            if (scrollHeight <= 0) return 0;
+            return markdownInput.scrollTop / scrollHeight;
         }
 
         /**
-         * Get the line height in the editor (approximate)
+         * Set editor scroll position from percentage
+         */
+        function setEditorScrollPercent(percent) {
+            const scrollHeight = markdownInput.scrollHeight - markdownInput.clientHeight;
+            markdownInput.scrollTop = percent * scrollHeight;
+        }
+
+        /**
+         * Get preview scroll position as percentage (0 to 1)
+         */
+        function getPreviewScrollPercent() {
+            const scrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
+            if (scrollHeight <= 0) return 0;
+            return markdownPreview.scrollTop / scrollHeight;
+        }
+
+        /**
+         * Set preview scroll position from percentage
+         */
+        function setPreviewScrollPercent(percent) {
+            const scrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
+            markdownPreview.scrollTop = percent * scrollHeight;
+        }
+
+        /**
+         * Get editor line height (approximate)
          */
         function getEditorLineHeight() {
             const style = window.getComputedStyle(markdownInput);
             const lineHeight = parseFloat(style.lineHeight);
-            if (!isNaN(lineHeight)) return lineHeight;
-            // Fallback: estimate based on font size
-            const fontSize = parseFloat(style.fontSize);
+            if (!isNaN(lineHeight) && lineHeight > 0) return lineHeight;
+            const fontSize = parseFloat(style.fontSize) || 14;
             return fontSize * 1.4;
         }
 
         /**
-         * Get the current line number at the top of the editor viewport
+         * Convert editor scroll percent to approximate line number
          */
-        function getEditorTopLine() {
+        function editorPercentToLine(percent) {
             const lineHeight = getEditorLineHeight();
-            const scrollTop = markdownInput.scrollTop;
+            const scrollHeight = markdownInput.scrollHeight - markdownInput.clientHeight;
+            if (scrollHeight <= 0) return 0;
+            const scrollTop = percent * scrollHeight;
             return scrollTop / lineHeight;
         }
 
         /**
-         * Calculate preview scroll position for a given editor line using interpolation
+         * Convert editor line to scroll percent
          */
-        function getPreviewScrollForLine(line) {
-            if (!scrollSyncMap || scrollSyncMap.length === 0) {
-                return null;
-            }
-
-            // Find surrounding mapped elements for interpolation
-            let before = null;
-            let after = null;
-
-            for (let i = 0; i < scrollSyncMap.length; i++) {
-                if (scrollSyncMap[i].line <= line) {
-                    before = scrollSyncMap[i];
-                }
-                if (scrollSyncMap[i].line >= line && after === null) {
-                    after = scrollSyncMap[i];
-                }
-            }
-
-            // Edge cases
-            if (!before && !after) return 0;
-            if (!before) return after.top;
-            if (!after) return before.top;
-            if (before === after) return before.top;
-
-            // Linear interpolation between the two anchor points
-            const lineRange = after.line - before.line;
-            const posRange = after.top - before.top;
-            const lineDelta = line - before.line;
-            const ratio = lineRange > 0 ? lineDelta / lineRange : 0;
-
-            return before.top + (ratio * posRange);
+        function editorLineToPercent(line) {
+            const lineHeight = getEditorLineHeight();
+            const scrollHeight = markdownInput.scrollHeight - markdownInput.clientHeight;
+            if (scrollHeight <= 0) return 0;
+            return (line * lineHeight) / scrollHeight;
         }
 
         /**
-         * Calculate editor scroll position for a given preview scroll position using interpolation
-         */
-        function getEditorScrollForPreviewPosition(previewScrollTop) {
-            if (!scrollSyncMap || scrollSyncMap.length === 0) {
-                return null;
-            }
-
-            // Find surrounding mapped elements for interpolation
-            let before = null;
-            let after = null;
-
-            for (let i = 0; i < scrollSyncMap.length; i++) {
-                if (scrollSyncMap[i].top <= previewScrollTop) {
-                    before = scrollSyncMap[i];
-                }
-                if (scrollSyncMap[i].top >= previewScrollTop && after === null) {
-                    after = scrollSyncMap[i];
-                }
-            }
-
-            // Edge cases
-            if (!before && !after) return 0;
-            if (!before) return after.line * getEditorLineHeight();
-            if (!after) return before.line * getEditorLineHeight();
-            if (before === after) return before.line * getEditorLineHeight();
-
-            // Linear interpolation between the two anchor points
-            const posRange = after.top - before.top;
-            const lineRange = after.line - before.line;
-            const posDelta = previewScrollTop - before.top;
-            const ratio = posRange > 0 ? posDelta / posRange : 0;
-
-            const targetLine = before.line + (ratio * lineRange);
-            return targetLine * getEditorLineHeight();
-        }
-
-        // Scroll sync state
-        let isSyncingFromEditor = false;
-        let isSyncingFromPreview = false;
-        let scrollSyncAnimationFrame = null;
-
-        /**
-         * Sync preview scroll when editor scrolls (with interpolation)
+         * Sync preview scroll when editor scrolls
          */
         function syncEditorToPreview() {
             if (!layoutToggle.checked) return;
-            if (isSyncingFromPreview) {
-                isSyncingFromPreview = false;
+
+            // Check if we should ignore this event (caused by programmatic scroll)
+            if (ignoreNextEditorScroll) {
+                ignoreNextEditorScroll = false;
                 return;
             }
 
-            // Cancel any pending animation frame
-            if (scrollSyncAnimationFrame) {
-                cancelAnimationFrame(scrollSyncAnimationFrame);
+            // Debounce
+            if (editorScrollTimeoutId) {
+                clearTimeout(editorScrollTimeoutId);
             }
 
-            scrollSyncAnimationFrame = requestAnimationFrame(() => {
-                isSyncingFromEditor = true;
+            editorScrollTimeoutId = setTimeout(() => {
+                editorScrollTimeoutId = null;
 
-                // Rebuild map if needed (could cache and invalidate on render)
-                if (!scrollSyncMap) {
-                    scrollSyncMap = buildScrollSyncMap();
-                }
+                // Get current editor line from scroll percent
+                const editorPercent = getEditorScrollPercent();
+                const currentLine = editorPercentToLine(editorPercent);
 
-                const currentLine = getEditorTopLine();
-                const targetScroll = getPreviewScrollForLine(currentLine);
+                // Translate to preview percent
+                const previewPercent = syncScrollMap.lineToPreviewPercent(currentLine);
+                if (previewPercent === null) return;
 
-                if (targetScroll !== null) {
-                    markdownPreview.scrollTop = targetScroll;
-                }
+                // Set flag to ignore the resulting scroll event
+                ignoreNextPreviewScroll = true;
 
-                // Reset flag after a short delay to allow the scroll event to fire
-                setTimeout(() => { isSyncingFromEditor = false; }, 50);
-            });
+                // Apply scroll
+                setPreviewScrollPercent(previewPercent);
+
+                // Reset ignore flag after scroll event has fired
+                setTimeout(() => { ignoreNextPreviewScroll = false; }, 50);
+            }, SCROLL_SYNC_DEBOUNCE);
         }
 
         /**
-         * Sync editor scroll when preview scrolls (with interpolation)
+         * Sync editor scroll when preview scrolls
          */
         function syncPreviewToEditor() {
             if (!layoutToggle.checked) return;
-            if (isSyncingFromEditor) {
-                isSyncingFromEditor = false;
+
+            // Check if we should ignore this event
+            if (ignoreNextPreviewScroll) {
+                ignoreNextPreviewScroll = false;
                 return;
             }
 
-            // Cancel any pending animation frame
-            if (scrollSyncAnimationFrame) {
-                cancelAnimationFrame(scrollSyncAnimationFrame);
+            // Debounce
+            if (previewScrollTimeoutId) {
+                clearTimeout(previewScrollTimeoutId);
             }
 
-            scrollSyncAnimationFrame = requestAnimationFrame(() => {
-                isSyncingFromPreview = true;
+            previewScrollTimeoutId = setTimeout(() => {
+                previewScrollTimeoutId = null;
 
-                // Rebuild map if needed
-                if (!scrollSyncMap) {
-                    scrollSyncMap = buildScrollSyncMap();
-                }
+                // Get current preview scroll percent
+                const previewPercent = getPreviewScrollPercent();
 
-                const targetScroll = getEditorScrollForPreviewPosition(markdownPreview.scrollTop);
+                // Translate to editor line, then to editor percent
+                const targetLine = syncScrollMap.previewPercentToLine(previewPercent);
+                if (targetLine === null) return;
 
-                if (targetScroll !== null) {
-                    markdownInput.scrollTop = targetScroll;
-                }
+                const editorPercent = editorLineToPercent(targetLine);
 
-                // Reset flag after a short delay
-                setTimeout(() => { isSyncingFromPreview = false; }, 50);
-            });
+                // Set flag to ignore the resulting scroll event
+                ignoreNextEditorScroll = true;
+
+                // Apply scroll
+                setEditorScrollPercent(editorPercent);
+
+                // Reset ignore flag after scroll event has fired
+                setTimeout(() => { ignoreNextEditorScroll = false; }, 50);
+            }, SCROLL_SYNC_DEBOUNCE);
+        }
+
+        /**
+         * Initialize scroll sync with ResizeObserver for automatic map invalidation
+         */
+        function initScrollSync() {
+            // Build initial map
+            syncScrollMap.build();
+
+            // Set up ResizeObserver to detect when preview content changes size
+            if (window.ResizeObserver) {
+                resizeObserver = new ResizeObserver(() => {
+                    // Invalidate map when size changes (images loaded, etc.)
+                    syncScrollMap.invalidate();
+                });
+                resizeObserver.observe(markdownPreview);
+            }
+
+            // Add scroll listeners
+            markdownInput.addEventListener('scroll', syncEditorToPreview);
+            markdownPreview.addEventListener('scroll', syncPreviewToEditor);
+        }
+
+        /**
+         * Remove scroll sync and clean up
+         */
+        function removeScrollSync() {
+            markdownInput.removeEventListener('scroll', syncEditorToPreview);
+            markdownPreview.removeEventListener('scroll', syncPreviewToEditor);
+
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+                resizeObserver = null;
+            }
+
+            // Clear any pending timeouts
+            if (editorScrollTimeoutId) clearTimeout(editorScrollTimeoutId);
+            if (previewScrollTimeoutId) clearTimeout(previewScrollTimeoutId);
+            editorScrollTimeoutId = null;
+            previewScrollTimeoutId = null;
+
+            // Reset flags
+            ignoreNextEditorScroll = false;
+            ignoreNextPreviewScroll = false;
+
+            syncScrollMap.invalidate();
         }
 
         /**
          * Invalidate scroll sync map (call after rendering)
          */
         function invalidateScrollSyncMap() {
-            scrollSyncMap = null;
-        }
-
-        function initScrollSync() {
-            // Rebuild map after layout settles
-            setTimeout(() => {
-                scrollSyncMap = buildScrollSyncMap();
-            }, 100);
-
-            markdownInput.addEventListener('scroll', syncEditorToPreview);
-            markdownPreview.addEventListener('scroll', syncPreviewToEditor);
-        }
-
-        function removeScrollSync() {
-            markdownInput.removeEventListener('scroll', syncEditorToPreview);
-            markdownPreview.removeEventListener('scroll', syncPreviewToEditor);
-
-            isSyncingFromEditor = false;
-            isSyncingFromPreview = false;
-            scrollSyncMap = null;
+            syncScrollMap.invalidate();
         }
 
         // =====================================================
@@ -1059,6 +1265,35 @@
             }
         }
 
+        /**
+         * Toggle swapped sides (editor on right, preview on left)
+         */
+        function toggleSwapSides() {
+            const swapSidesToggle = document.getElementById('swapSidesToggle');
+            const isSwapped = swapSidesToggle.checked;
+
+            if (isSwapped) {
+                document.body.classList.add('mode-swapped');
+            } else {
+                document.body.classList.remove('mode-swapped');
+            }
+
+            // Save preference
+            localStorage.setItem('swapSides', isSwapped ? 'true' : 'false');
+        }
+
+        /**
+         * Load saved swap sides preference
+         */
+        function loadSwapSidesPreference() {
+            const swapSidesToggle = document.getElementById('swapSidesToggle');
+            const savedPref = localStorage.getItem('swapSides');
+            if (savedPref === 'true') {
+                swapSidesToggle.checked = true;
+                document.body.classList.add('mode-swapped');
+            }
+        }
+
         // =====================================================
         // RESIZABLE DIVIDER
         // =====================================================
@@ -1112,8 +1347,8 @@
 
             // Rebuild scroll sync map after resize
             if (layoutToggle.checked) {
-                invalidateScrollSyncMap();
-                scrollSyncMap = buildScrollSyncMap();
+                syncScrollMap.invalidate();
+                syncScrollMap.build();
             }
         }
 
@@ -1191,8 +1426,8 @@
 
             // Rebuild scroll sync map after mermaid resize
             if (layoutToggle.checked) {
-                invalidateScrollSyncMap();
-                scrollSyncMap = buildScrollSyncMap();
+                syncScrollMap.invalidate();
+                syncScrollMap.build();
             }
         }
 
@@ -1321,11 +1556,11 @@
                 });
 
                 // Invalidate and rebuild scroll sync map after render
-                invalidateScrollSyncMap();
+                syncScrollMap.invalidate();
                 if (layoutToggle.checked) {
                     // Delay slightly to allow DOM to settle
                     setTimeout(() => {
-                        scrollSyncMap = buildScrollSyncMap();
+                        syncScrollMap.build();
                     }, 100);
                 }
             } catch (error) {
@@ -1357,6 +1592,7 @@
 
         layoutToggle.addEventListener('change', toggleLayout);
         themeToggle.addEventListener('change', () => setTheme(themeToggle.checked));
+        document.getElementById('swapSidesToggle').addEventListener('change', toggleSwapSides);
 
         resizeDivider.addEventListener('mousedown', startResize);
         resizeDivider.addEventListener('touchstart', startResize);
@@ -1364,8 +1600,9 @@
         // Initialize Mermaid resize handlers (event delegation)
         initMermaidResizeHandlers();
 
-        // Load saved theme preference
+        // Load saved preferences
         loadSavedTheme();
+        loadSwapSidesPreference();
 
         // Initial render
         renderMarkdown();
