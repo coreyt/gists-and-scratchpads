@@ -15,89 +15,34 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
 
     <style>
-        /* Light theme (Flatly) custom properties - using Flatly's actual palette */
-        :root {
-            --viewer-bg: #fff;            /* Match Flatly's body-bg exactly */
-            --viewer-card-bg: #fff;
-            --viewer-text: #2c3e50;
-            --viewer-text-muted: #7b8a8b;
-            --viewer-border: #dce4ec;
-            --viewer-primary: #2c3e50;    /* Flatly's primary (dark blue) */
-            --viewer-accent: #2c3e50;     /* Match primary for consistency */
-            --viewer-code-bg: #f8f9fa;    /* Light gray for code background */
-            --viewer-code-text: #e83e8c;  /* Pink for inline code - distinct from text */
-            --viewer-pre-bg: #2c3e50;
-            --viewer-pre-text: #ecf0f1;
-            --viewer-link: #3498db;       /* Flatly's info color (readable blue) */
-            --viewer-table-header: #2c3e50;
-            --viewer-table-stripe: #f8f9fa;
-            --viewer-shadow: rgba(0, 0, 0, 0.08);
-            --viewer-divider-bg: #bdc3c7;
-            --viewer-divider-hover: #2c3e50;
+        /* Make containers wider - use more viewport width with small gutters */
+        .container, .container-fluid {
+            max-width: calc(100% - 2rem);
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
 
-        /* Dark theme (Darkly) custom properties - using Darkly's actual palette */
-        [data-theme="dark"] {
-            --viewer-bg: #222;            /* Match Darkly's body-bg exactly */
-            --viewer-card-bg: #303030;
-            --viewer-text: #fff;
-            --viewer-text-muted: #adb5bd;
-            --viewer-border: #444;
-            --viewer-primary: #375a7f;    /* Darkly's actual primary (blue) */
-            --viewer-accent: #375a7f;     /* Match primary for consistency */
-            --viewer-code-bg: #3a3a3a;    /* Slightly lighter for code background */
-            --viewer-code-text: #f48fb1;  /* Lighter pink for dark theme - readable */
-            --viewer-pre-bg: #1a1a1a;
-            --viewer-pre-text: #fff;
-            --viewer-link: #3498db;       /* Darkly's info color (readable blue) */
-            --viewer-table-header: #375a7f;
-            --viewer-table-stripe: #3a3a3a;
-            --viewer-shadow: rgba(0, 0, 0, 0.3);
-            --viewer-divider-bg: #555;
-            --viewer-divider-hover: #375a7f;
+        @media (min-width: 576px) {
+            .container, .container-fluid {
+                max-width: calc(100% - 3rem);
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
         }
 
+        /* Adjust body padding for fixed navbar */
         body {
-            background-color: var(--viewer-bg);
-            color: var(--viewer-text);
-            transition: background-color 0.3s ease, color 0.3s ease;
+            padding-top: 70px;
         }
 
-        .header {
-            background: var(--viewer-card-bg);
-            color: var(--viewer-primary);
-            padding: 1.5rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px var(--viewer-shadow);
-            border-bottom: 3px solid var(--viewer-accent);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-
-        .header h1 {
-            font-weight: 600;
-            margin: 0;
-            font-size: 2rem;
-            color: var(--viewer-primary);
-        }
-
-        .header p {
-            margin: 0.5rem 0 0 0;
-            color: var(--viewer-text-muted);
-            font-size: 0.95rem;
-        }
-
-        .editor-container {
-            background: var(--viewer-card-bg);
+        .editor-container, .preview-container {
             border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 2px 8px var(--viewer-shadow);
-            margin-bottom: 2rem;
-            transition: background-color 0.3s ease;
+            padding: 1rem;
+            margin-bottom: 1rem;
         }
 
         .textarea-wrapper {
             position: relative;
-            margin-bottom: 1.5rem;
         }
 
         #markdownInput {
@@ -105,243 +50,46 @@
             min-height: 400px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            border: 2px solid var(--viewer-border);
-            border-radius: 6px;
-            padding: 1rem;
             resize: vertical;
-            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-            background-color: var(--viewer-card-bg);
-            color: var(--viewer-text);
-        }
-
-        #markdownInput:focus {
-            outline: none;
-            border-color: var(--viewer-accent);
-            box-shadow: 0 0 0 0.2rem rgba(55, 90, 127, 0.25);
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .status-indicator::before {
-            content: '';
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 0.75rem;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .status-valid {
-            background-color: rgba(0, 188, 140, 0.15);
-            color: #00bc8c;
-            border: 1px solid rgba(0, 188, 140, 0.4);
-        }
-
-        .status-valid::before {
-            background-color: #00bc8c;
-        }
-
-        .status-warning {
-            background-color: rgba(243, 156, 18, 0.15);
-            color: #f39c12;
-            border: 1px solid rgba(243, 156, 18, 0.4);
-        }
-
-        .status-warning::before {
-            background-color: #f39c12;
-        }
-
-        .status-error {
-            background-color: rgba(231, 76, 60, 0.15);
-            color: #e74c3c;
-            border: 1px solid rgba(231, 76, 60, 0.4);
-        }
-
-        .status-error::before {
-            background-color: #e74c3c;
         }
 
         .button-group {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
-        }
-
-        .preview-container {
-            background: var(--viewer-card-bg);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 2px 8px var(--viewer-shadow);
-            min-height: 300px;
-            transition: background-color 0.3s ease;
-        }
-
-        .preview-header {
-            color: var(--viewer-primary);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--viewer-accent);
         }
 
         #markdownPreview {
             line-height: 1.6;
-            color: var(--viewer-text);
         }
 
-        /* Styled Markdown Output */
-        #markdownPreview h1,
-        #markdownPreview h2,
-        #markdownPreview h3,
-        #markdownPreview h4,
-        #markdownPreview h5,
-        #markdownPreview h6 {
-            color: var(--viewer-primary);
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        #markdownPreview h1 {
-            font-size: 2rem;
-            border-bottom: 3px solid var(--viewer-accent);
-            padding-bottom: 0.5rem;
-        }
-
-        #markdownPreview h2 {
-            font-size: 1.75rem;
-            border-bottom: 2px solid var(--viewer-border);
-            padding-bottom: 0.4rem;
-        }
-
-        #markdownPreview h3 {
-            font-size: 1.5rem;
-        }
-
-        #markdownPreview p {
-            margin-bottom: 1rem;
-        }
-
-        #markdownPreview code {
-            background-color: var(--viewer-code-bg);
-            padding: 0.2rem 0.4rem;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: var(--viewer-code-text);
-        }
-
+        /* Minimal markdown output styling - let Bootstrap handle most */
         #markdownPreview pre {
-            background-color: var(--viewer-pre-bg);
-            color: var(--viewer-pre-text);
             padding: 1rem;
             border-radius: 6px;
             overflow-x: auto;
-            margin: 1rem 0;
-        }
-
-        #markdownPreview pre code {
-            background-color: transparent;
-            color: var(--viewer-pre-text);
-            padding: 0;
         }
 
         #markdownPreview blockquote {
-            border-left: 4px solid var(--viewer-accent);
+            border-left: 4px solid currentColor;
             padding-left: 1rem;
             margin-left: 0;
-            color: var(--viewer-text-muted);
-        }
-
-        #markdownPreview a {
-            color: var(--viewer-link);
-            text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: border-color 0.3s ease;
-        }
-
-        #markdownPreview a:hover {
-            border-bottom-color: var(--viewer-link);
-        }
-
-        #markdownPreview ul,
-        #markdownPreview ol {
-            margin-bottom: 1rem;
-            padding-left: 2rem;
-        }
-
-        #markdownPreview li {
-            margin-bottom: 0.5rem;
+            opacity: 0.8;
         }
 
         #markdownPreview table {
             width: 100%;
-            border-collapse: collapse;
             margin: 1rem 0;
-        }
-
-        #markdownPreview th,
-        #markdownPreview td {
-            border: 1px solid var(--viewer-border);
-            padding: 0.75rem;
-            text-align: left;
-        }
-
-        #markdownPreview th {
-            background-color: var(--viewer-table-header);
-            color: white;
-            font-weight: 600;
-        }
-
-        #markdownPreview tr:nth-child(even) {
-            background-color: var(--viewer-table-stripe);
         }
 
         #markdownPreview img {
             max-width: 100%;
             height: auto;
-            border-radius: 6px;
-            margin: 1rem 0;
-        }
-
-        #markdownPreview hr {
-            border: 0;
-            height: 2px;
-            background: var(--viewer-accent);
-            margin: 2rem 0;
         }
 
         .empty-state {
-            text-align: left;
-            color: var(--viewer-text-muted);
             padding: 3rem 0;
-        }
-
-        footer {
-            text-align: left;
-            padding: 2rem 0;
-            color: var(--viewer-text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* Form label styling */
-        .form-label {
-            color: var(--viewer-primary);
+            opacity: 0.6;
         }
 
         /* Theme toggle styling */
@@ -349,9 +97,9 @@
             font-size: 1.1rem;
         }
 
-        /* Settings dropdown styling - minimal overrides, let Bootstrap handle theming */
+        /* Settings dropdown styling */
         .dropdown-menu {
-            min-width: 200px;
+            min-width: 220px;
         }
 
         /* Swapped sides layout */
@@ -359,19 +107,11 @@
             flex-direction: row-reverse;
         }
 
-        .mode-swapped .editor-container {
-            border-radius: 0 8px 8px 0;
-        }
-
-        .mode-swapped .preview-container {
-            border-radius: 8px 0 0 8px;
-        }
-
         /* Side-by-Side Layout Styles */
         .mode-side-by-side .view-mode-container {
             display: flex;
             align-items: stretch;
-            height: calc(100vh - 180px);
+            height: calc(100vh - 140px);
             min-height: 500px;
             gap: 0;
         }
@@ -382,7 +122,6 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border-radius: 8px 0 0 8px;
         }
 
         .mode-side-by-side .preview-container {
@@ -391,41 +130,15 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border-radius: 0 8px 8px 0;
         }
 
         /* Resizable Divider */
         .resize-divider {
             display: none;
             width: 8px;
-            background-color: var(--viewer-divider-bg);
             cursor: col-resize;
             flex-shrink: 0;
             position: relative;
-            transition: background-color 0.2s ease;
-        }
-
-        .resize-divider:hover,
-        .resize-divider.dragging {
-            background-color: var(--viewer-divider-hover);
-        }
-
-        .resize-divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 4px;
-            height: 40px;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent,
-                transparent 3px,
-                var(--viewer-card-bg) 3px,
-                var(--viewer-card-bg) 6px
-            );
-            border-radius: 2px;
         }
 
         .mode-side-by-side .resize-divider {
@@ -436,7 +149,6 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            margin-bottom: 1rem;
         }
 
         .mode-side-by-side #markdownInput {
@@ -449,36 +161,6 @@
         .mode-side-by-side #markdownPreview {
             overflow-y: auto;
             flex: 1;
-            padding-right: 0.5rem;
-        }
-
-        /* Custom Scrollbar for side-by-side panels */
-        .mode-side-by-side #markdownInput::-webkit-scrollbar,
-        .mode-side-by-side #markdownPreview::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .mode-side-by-side #markdownInput::-webkit-scrollbar-track,
-        .mode-side-by-side #markdownPreview::-webkit-scrollbar-track {
-            background: var(--viewer-bg);
-            border-radius: 4px;
-        }
-
-        .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb,
-        .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb {
-            background: var(--viewer-divider-bg);
-            border-radius: 4px;
-        }
-
-        .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb:hover,
-        .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb:hover {
-            background: var(--viewer-divider-hover);
-        }
-
-        /* Hide elements that might clutter side-by-side view if needed */
-        .mode-side-by-side .header {
-            margin-bottom: 1rem;
         }
 
         /* Prevent text selection while dragging divider */
@@ -494,9 +176,8 @@
             min-width: 200px;
             max-width: 100%;
             margin: 1rem 0;
-            border: 2px solid var(--viewer-border);
+            border: 1px solid;
             border-radius: 6px;
-            background-color: var(--viewer-card-bg);
             overflow: hidden;
         }
 
@@ -517,56 +198,44 @@
             top: 0;
             bottom: 0;
             width: 12px;
-            background-color: var(--viewer-divider-bg);
             cursor: ew-resize;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s ease;
+            opacity: 0.5;
         }
 
-        .mermaid-resize-handle:hover,
-        .mermaid-resize-handle.dragging {
-            background-color: var(--viewer-accent);
-        }
-
-        .mermaid-resize-handle::before {
-            content: '';
-            width: 4px;
-            height: 30px;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent,
-                transparent 3px,
-                var(--viewer-card-bg) 3px,
-                var(--viewer-card-bg) 6px
-            );
-            border-radius: 2px;
+        .mermaid-resize-handle:hover {
+            opacity: 1;
         }
 
         .mermaid-width-indicator {
             position: absolute;
             top: 4px;
             left: 4px;
-            background-color: var(--viewer-primary);
-            color: white;
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 11px;
             font-family: monospace;
             opacity: 0.8;
             pointer-events: none;
-            z-index: 10;
-        }
-
-        .mermaid-container:hover .mermaid-width-indicator {
-            opacity: 1;
         }
 
         /* Prevent text selection while resizing mermaid */
         body.resizing-mermaid {
             user-select: none;
             cursor: ew-resize;
+        }
+
+        /* Highlight errors in textarea */
+        .highlight-issues #markdownInput {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .highlight-issues.has-warning #markdownInput {
+            border-color: #ffc107 !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
         }
 
         /* Responsive override: Disable side-by-side on small screens */
@@ -581,10 +250,6 @@
                 flex: none;
                 overflow: visible;
                 height: auto;
-                border-radius: 8px;
-            }
-            .mode-side-by-side .editor-container {
-                margin-bottom: 2rem;
             }
             .mode-side-by-side #markdownInput {
                 height: auto !important;
@@ -600,102 +265,116 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-                <h1>View Scrubbai</h1>
-                <p>Professional Markdown Viewer & Editor</p>
-            </div>
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
-                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
-                    </svg>
-                    Settings
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
-                    <li class="dropdown-item-text">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="layoutToggle">
-                            <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
-                        </div>
-                    </li>
-                    <li class="dropdown-item-text">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="swapSidesToggle">
-                            <label class="form-check-label" for="swapSidesToggle">Swap Sides</label>
-                        </div>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li class="dropdown-item-text">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="theme-icon">&#9728;</span>
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" id="themeToggle">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">View Scrubbai</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear me-1" viewBox="0 0 16 16">
+                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                        </svg>
+                        Settings
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                        <li class="dropdown-item-text">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="layoutToggle">
+                                <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
                             </div>
-                            <span class="theme-icon">&#9790;</span>
-                            <span class="ms-1">Theme</span>
-                        </div>
-                    </li>
-                </ul>
+                        </li>
+                        <li class="dropdown-item-text">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="swapSidesToggle">
+                                <label class="form-check-label" for="swapSidesToggle">Swap Sides</label>
+                            </div>
+                        </li>
+                        <li class="dropdown-item-text">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="highlightIssuesToggle">
+                                <label class="form-check-label" for="highlightIssuesToggle">Highlight Issues</label>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-item-text">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="theme-icon">&#9728;</span>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" id="themeToggle">
+                                </div>
+                                <span class="theme-icon">&#9790;</span>
+                                <span class="ms-1">Theme</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <div id="mainContainer" class="container">
+    <div id="mainContainer" class="container-fluid">
         <div class="view-mode-container">
-            <div class="editor-container">
-                <div class="textarea-wrapper">
-                    <label for="markdownInput" class="form-label fw-bold">
-                        Markdown Editor
-                    </label>
-                    <textarea
-                        id="markdownInput"
-                        class="form-control"
-                        rows="20"
-                        placeholder="Type or paste your markdown here...&#10;&#10;# Example Heading&#10;&#10;This is a **bold** statement with *italic* text.&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```javascript&#10;console.log('Hello, World!');&#10;```&#10;&#10;```mermaid&#10;graph TD;&#10;    A-->B;&#10;```"
-                    ></textarea>
-                </div>
-
-                <div id="statusIndicator" class="status-indicator status-valid">
-                    Valid markdown - No issues detected
-                </div>
-
-                <div class="button-group">
-                    <button id="clearBtn" class="btn btn-outline-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                        </svg>
-                        Clear
-                    </button>
-                    <button id="rerenderBtn" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
-                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
-                            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
-                        </svg>
-                        Re-render
-                    </button>
+            <div class="editor-container card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item active">Markdown Editor</li>
+                            </ol>
+                        </nav>
+                        <span id="statusIndicator" class="badge bg-success">Valid</span>
+                    </div>
+                    <div class="textarea-wrapper mb-2">
+                        <textarea
+                            id="markdownInput"
+                            class="form-control"
+                            rows="20"
+                            placeholder="Type or paste your markdown here...&#10;&#10;# Example Heading&#10;&#10;This is a **bold** statement with *italic* text.&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```javascript&#10;console.log('Hello, World!');&#10;```&#10;&#10;```mermaid&#10;graph TD;&#10;    A-->B;&#10;```"
+                        ></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button id="clearBtn" class="btn btn-outline-secondary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-trash me-1" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                            </svg>
+                            Clear
+                        </button>
+                        <button id="rerenderBtn" class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise me-1" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                            </svg>
+                            Re-render
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="resize-divider" id="resizeDivider"></div>
+            <div class="resize-divider bg-secondary" id="resizeDivider"></div>
 
-            <div class="preview-container">
-                <h2 class="preview-header fw-bold" style="font-size: 1rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">
-                    Preview
-                </h2>
-                <div id="markdownPreview" class="empty-state">
-                    Your rendered markdown will appear here...
+            <div class="preview-container card">
+                <div class="card-body">
+                    <nav aria-label="breadcrumb" class="mb-2">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item active">Preview</li>
+                        </ol>
+                    </nav>
+                    <div id="markdownPreview" class="empty-state">
+                        Your rendered markdown will appear here...
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 View Scrubbai. Built with markdown-it and Bootstrap 5.</p>
+    <footer class="text-muted small py-3">
+        <div class="container-fluid">
+            <p class="mb-0">&copy; 2024 View Scrubbai. Built with markdown-it and Bootstrap 5.</p>
         </div>
     </footer>
 
@@ -1501,21 +1180,41 @@
         }
 
         function updateStatus(lintResult) {
-            statusIndicator.className = 'status-indicator';
+            // Update badge
+            statusIndicator.className = 'badge';
 
             switch (lintResult.status) {
                 case 'valid':
-                    statusIndicator.classList.add('status-valid');
+                    statusIndicator.classList.add('bg-success');
+                    statusIndicator.textContent = 'Valid';
+                    statusIndicator.title = lintResult.message;
                     break;
                 case 'warning':
-                    statusIndicator.classList.add('status-warning');
+                    statusIndicator.classList.add('bg-warning', 'text-dark');
+                    statusIndicator.textContent = 'Warning';
+                    statusIndicator.title = lintResult.message;
                     break;
                 case 'error':
-                    statusIndicator.classList.add('status-error');
+                    statusIndicator.classList.add('bg-danger');
+                    statusIndicator.textContent = 'Error';
+                    statusIndicator.title = lintResult.message;
                     break;
             }
 
-            statusIndicator.textContent = lintResult.message;
+            // Handle highlight issues setting
+            const highlightToggle = document.getElementById('highlightIssuesToggle');
+            if (highlightToggle && highlightToggle.checked) {
+                if (lintResult.status === 'error') {
+                    document.body.classList.add('highlight-issues');
+                    document.body.classList.remove('has-warning');
+                } else if (lintResult.status === 'warning') {
+                    document.body.classList.add('highlight-issues', 'has-warning');
+                } else {
+                    document.body.classList.remove('highlight-issues', 'has-warning');
+                }
+            } else {
+                document.body.classList.remove('highlight-issues', 'has-warning');
+            }
         }
 
         // =====================================================
@@ -1584,6 +1283,13 @@
         layoutToggle.addEventListener('change', toggleLayout);
         themeToggle.addEventListener('change', () => setTheme(themeToggle.checked));
         document.getElementById('swapSidesToggle').addEventListener('change', toggleSwapSides);
+        document.getElementById('highlightIssuesToggle').addEventListener('change', () => {
+            // Re-run linting to update highlight state
+            const lintResult = lintMarkdown(markdownInput.value);
+            updateStatus(lintResult);
+            // Save preference
+            localStorage.setItem('highlightIssues', document.getElementById('highlightIssuesToggle').checked ? 'true' : 'false');
+        });
 
         resizeDivider.addEventListener('mousedown', startResize);
         resizeDivider.addEventListener('touchstart', startResize);
@@ -1594,6 +1300,11 @@
         // Load saved preferences
         loadSavedTheme();
         loadSwapSidesPreference();
+
+        // Load highlight issues preference
+        if (localStorage.getItem('highlightIssues') === 'true') {
+            document.getElementById('highlightIssuesToggle').checked = true;
+        }
 
         // Initial render
         renderMarkdown();
