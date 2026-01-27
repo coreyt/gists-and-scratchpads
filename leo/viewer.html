@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Scrubbai - Markdown Viewer & Editor</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Bootswatch Theme CSS (Flatly for light, Darkly for dark) -->
+    <link id="theme-stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/flatly/bootstrap.min.css" rel="stylesheet">
 
     <!-- marked.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
@@ -15,64 +15,82 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
 
     <style>
+        /* Light theme (Flatly) custom properties */
         :root {
-            /* PLF Neutral Colors */
-            --neutral-white: #FFFFFF;
-            --neutral-lightest: #EEEEEE;
-            --neutral-light: #DFDFDF;
-            --neutral-medium: #D1D1D1;
-            --neutral-dark: #B2B4AE;
-            --neutral-darkest: #707070;
+            --viewer-bg: #ecf0f1;
+            --viewer-card-bg: #ffffff;
+            --viewer-text: #2c3e50;
+            --viewer-text-muted: #7b8a8b;
+            --viewer-border: #dce4ec;
+            --viewer-primary: #2c3e50;
+            --viewer-accent: #18bc9c;
+            --viewer-code-bg: #ecf0f1;
+            --viewer-pre-bg: #2c3e50;
+            --viewer-pre-text: #ecf0f1;
+            --viewer-link: #18bc9c;
+            --viewer-table-header: #2c3e50;
+            --viewer-table-stripe: #f8f9fa;
+            --viewer-shadow: rgba(0, 0, 0, 0.08);
+            --viewer-divider-bg: #bdc3c7;
+            --viewer-divider-hover: #95a5a6;
+        }
 
-            /* PLF Accent Colors */
-            --accent-button: #414141;
-            --accent-primary: #1C5687;
-
-            /* PLF Patient Status Colors */
-            --status-green: #3A913F;
-            --status-blue: #2B72CC;
-            --status-yellow: #FFD200;
-            --status-red: #EB0000;
-
-            /* Legacy Stryker Colors (for gradients/special elements) */
-            --stryker-red: #E30613;
-            --stryker-navy: #002856;
+        /* Dark theme (Darkly) custom properties */
+        [data-theme="dark"] {
+            --viewer-bg: #222222;
+            --viewer-card-bg: #303030;
+            --viewer-text: #ffffff;
+            --viewer-text-muted: #adb5bd;
+            --viewer-border: #444444;
+            --viewer-primary: #00bc8c;
+            --viewer-accent: #00bc8c;
+            --viewer-code-bg: #444444;
+            --viewer-pre-bg: #1a1a1a;
+            --viewer-pre-text: #ffffff;
+            --viewer-link: #00bc8c;
+            --viewer-table-header: #00bc8c;
+            --viewer-table-stripe: #3a3a3a;
+            --viewer-shadow: rgba(0, 0, 0, 0.3);
+            --viewer-divider-bg: #555555;
+            --viewer-divider-hover: #00bc8c;
         }
 
         body {
-            background-color: var(--neutral-lightest);
-            color: var(--accent-button);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--viewer-bg);
+            color: var(--viewer-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .header {
-            background: var(--neutral-white);
-            color: var(--accent-primary);
+            background: var(--viewer-card-bg);
+            color: var(--viewer-primary);
             padding: 1.5rem 0;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            border-bottom: 3px solid var(--accent-primary);
+            box-shadow: 0 2px 4px var(--viewer-shadow);
+            border-bottom: 3px solid var(--viewer-accent);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .header h1 {
             font-weight: 600;
             margin: 0;
             font-size: 2rem;
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
         }
 
         .header p {
             margin: 0.5rem 0 0 0;
-            color: var(--neutral-darkest);
+            color: var(--viewer-text-muted);
             font-size: 0.95rem;
         }
 
         .editor-container {
-            background: var(--neutral-white);
+            background: var(--viewer-card-bg);
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px var(--viewer-shadow);
             margin-bottom: 2rem;
+            transition: background-color 0.3s ease;
         }
 
         .textarea-wrapper {
@@ -85,18 +103,19 @@
             min-height: 400px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            border: 2px solid var(--neutral-light);
+            border: 2px solid var(--viewer-border);
             border-radius: 6px;
             padding: 1rem;
             resize: vertical;
-            transition: border-color 0.3s ease;
-            background-color: var(--neutral-white);
+            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--viewer-card-bg);
+            color: var(--viewer-text);
         }
 
         #markdownInput:focus {
             outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 0.2rem rgba(28, 86, 135, 0.15);
+            border-color: var(--viewer-accent);
+            box-shadow: 0 0 0 0.2rem rgba(24, 188, 156, 0.25);
         }
 
         .status-indicator {
@@ -125,101 +144,62 @@
         }
 
         .status-valid {
-            background-color: rgba(58, 145, 63, 0.1);
-            color: var(--status-green);
-            border: 1px solid rgba(58, 145, 63, 0.3);
+            background-color: rgba(0, 188, 140, 0.15);
+            color: #00bc8c;
+            border: 1px solid rgba(0, 188, 140, 0.4);
         }
 
         .status-valid::before {
-            background-color: var(--status-green);
+            background-color: #00bc8c;
         }
 
         .status-warning {
-            background-color: rgba(255, 210, 0, 0.1);
-            color: #705c00;
-            border: 1px solid rgba(255, 210, 0, 0.3);
+            background-color: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+            border: 1px solid rgba(243, 156, 18, 0.4);
         }
 
         .status-warning::before {
-            background-color: var(--status-yellow);
+            background-color: #f39c12;
         }
 
         .status-error {
-            background-color: rgba(235, 0, 0, 0.1);
-            color: var(--status-red);
-            border: 1px solid rgba(235, 0, 0, 0.3);
+            background-color: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.4);
         }
 
         .status-error::before {
-            background-color: var(--status-red);
-        }
-
-        .btn-stryker-primary {
-            background-color: var(--accent-primary);
-            border-color: var(--accent-primary);
-            color: white;
-            font-weight: 500;
-            /* Touch target size: min 50px height (13mm at 96 DPI) */
-            padding: 0.75rem 1.75rem;
-            min-height: 50px;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-        }
-
-        .btn-stryker-primary:hover {
-            background-color: #154566;
-            border-color: #154566;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(28, 86, 135, 0.3);
-        }
-
-        .btn-stryker-secondary {
-            background-color: var(--neutral-white);
-            border: 2px solid var(--accent-button);
-            color: var(--accent-button);
-            font-weight: 500;
-            /* Touch target size: min 50px height (13mm at 96 DPI) */
-            padding: 0.75rem 1.75rem;
-            min-height: 50px;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-        }
-
-        .btn-stryker-secondary:hover {
-            background-color: var(--accent-button);
-            border-color: var(--accent-button);
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(65, 65, 65, 0.3);
+            background-color: #e74c3c;
         }
 
         .button-group {
             display: flex;
-            /* Spacing between buttons: min 6mm (~23px) */
-            gap: 1.5rem;
+            gap: 1rem;
             margin-bottom: 2rem;
             flex-wrap: wrap;
         }
 
         .preview-container {
-            background: var(--neutral-white);
+            background: var(--viewer-card-bg);
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px var(--viewer-shadow);
             min-height: 300px;
+            transition: background-color 0.3s ease;
         }
 
         .preview-header {
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
             font-weight: 600;
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--accent-primary);
+            border-bottom: 2px solid var(--viewer-accent);
         }
 
         #markdownPreview {
             line-height: 1.6;
+            color: var(--viewer-text);
         }
 
         /* Styled Markdown Output */
@@ -229,7 +209,7 @@
         #markdownPreview h4,
         #markdownPreview h5,
         #markdownPreview h6 {
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
             margin-top: 1.5rem;
             margin-bottom: 1rem;
             font-weight: 600;
@@ -237,13 +217,13 @@
 
         #markdownPreview h1 {
             font-size: 2rem;
-            border-bottom: 3px solid var(--accent-primary);
+            border-bottom: 3px solid var(--viewer-accent);
             padding-bottom: 0.5rem;
         }
 
         #markdownPreview h2 {
             font-size: 1.75rem;
-            border-bottom: 2px solid var(--neutral-light);
+            border-bottom: 2px solid var(--viewer-border);
             padding-bottom: 0.4rem;
         }
 
@@ -256,17 +236,17 @@
         }
 
         #markdownPreview code {
-            background-color: var(--neutral-lightest);
+            background-color: var(--viewer-code-bg);
             padding: 0.2rem 0.4rem;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
-            color: var(--accent-primary);
+            color: var(--viewer-accent);
         }
 
         #markdownPreview pre {
-            background-color: var(--accent-button);
-            color: white;
+            background-color: var(--viewer-pre-bg);
+            color: var(--viewer-pre-text);
             padding: 1rem;
             border-radius: 6px;
             overflow-x: auto;
@@ -275,26 +255,26 @@
 
         #markdownPreview pre code {
             background-color: transparent;
-            color: white;
+            color: var(--viewer-pre-text);
             padding: 0;
         }
 
         #markdownPreview blockquote {
-            border-left: 4px solid var(--accent-primary);
+            border-left: 4px solid var(--viewer-accent);
             padding-left: 1rem;
             margin-left: 0;
-            color: var(--neutral-darkest);
+            color: var(--viewer-text-muted);
         }
 
         #markdownPreview a {
-            color: var(--accent-primary);
+            color: var(--viewer-link);
             text-decoration: none;
             border-bottom: 1px solid transparent;
             transition: border-color 0.3s ease;
         }
 
         #markdownPreview a:hover {
-            border-bottom-color: var(--accent-primary);
+            border-bottom-color: var(--viewer-link);
         }
 
         #markdownPreview ul,
@@ -315,19 +295,19 @@
 
         #markdownPreview th,
         #markdownPreview td {
-            border: 1px solid var(--neutral-light);
+            border: 1px solid var(--viewer-border);
             padding: 0.75rem;
             text-align: left;
         }
 
         #markdownPreview th {
-            background-color: var(--accent-primary);
+            background-color: var(--viewer-table-header);
             color: white;
             font-weight: 600;
         }
 
         #markdownPreview tr:nth-child(even) {
-            background-color: var(--neutral-lightest);
+            background-color: var(--viewer-table-stripe);
         }
 
         #markdownPreview img {
@@ -340,45 +320,107 @@
         #markdownPreview hr {
             border: 0;
             height: 2px;
-            background: linear-gradient(to right, var(--accent-primary), var(--accent-button));
+            background: var(--viewer-accent);
             margin: 2rem 0;
         }
 
         .empty-state {
             text-align: left;
-            color: var(--neutral-dark);
+            color: var(--viewer-text-muted);
             padding: 3rem 0;
         }
 
         footer {
             text-align: left;
             padding: 2rem 0;
-            color: var(--neutral-darkest);
+            color: var(--viewer-text-muted);
             font-size: 0.9rem;
         }
 
         /* Form label styling */
         .form-label {
-            color: var(--accent-primary);
+            color: var(--viewer-primary);
+        }
+
+        /* Theme toggle styling */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle .form-check-input {
+            width: 3rem;
+            height: 1.5rem;
+        }
+
+        .theme-icon {
+            font-size: 1.2rem;
         }
 
         /* Side-by-Side Layout Styles */
         .mode-side-by-side .view-mode-container {
             display: flex;
-            gap: 1.5rem;
             align-items: stretch;
-            height: calc(100vh - 180px); /* Adjust based on header/footer height */
+            height: calc(100vh - 180px);
             min-height: 500px;
+            gap: 0;
         }
 
-        .mode-side-by-side .editor-container,
+        .mode-side-by-side .editor-container {
+            flex: 0 0 50%;
+            margin-bottom: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px 0 0 8px;
+        }
+
         .mode-side-by-side .preview-container {
             flex: 1;
             margin-bottom: 0;
-            overflow: hidden; /* Manage internal scrolling */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            width: 50%; /* Explicitly set width to enforce even split */
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Resizable Divider */
+        .resize-divider {
+            display: none;
+            width: 8px;
+            background-color: var(--viewer-divider-bg);
+            cursor: col-resize;
+            flex-shrink: 0;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+
+        .resize-divider:hover,
+        .resize-divider.dragging {
+            background-color: var(--viewer-divider-hover);
+        }
+
+        .resize-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 40px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 3px,
+                var(--viewer-card-bg) 3px,
+                var(--viewer-card-bg) 6px
+            );
+            border-radius: 2px;
+        }
+
+        .mode-side-by-side .resize-divider {
+            display: block;
         }
 
         .mode-side-by-side .textarea-wrapper {
@@ -390,15 +432,15 @@
 
         .mode-side-by-side #markdownInput {
             flex: 1;
-            resize: none; /* Disable manual resize in side-by-side mode */
-            height: 100% !important; /* Override min-height */
+            resize: none;
+            height: 100% !important;
             min-height: 0;
         }
 
         .mode-side-by-side #markdownPreview {
             overflow-y: auto;
             flex: 1;
-            padding-right: 0.5rem; /* Add some padding for scrollbar */
+            padding-right: 0.5rem;
         }
 
         /* Custom Scrollbar for side-by-side panels */
@@ -410,24 +452,30 @@
 
         .mode-side-by-side #markdownInput::-webkit-scrollbar-track,
         .mode-side-by-side #markdownPreview::-webkit-scrollbar-track {
-            background: var(--neutral-lightest);
+            background: var(--viewer-bg);
             border-radius: 4px;
         }
 
         .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb,
         .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb {
-            background: var(--neutral-medium);
+            background: var(--viewer-divider-bg);
             border-radius: 4px;
         }
 
         .mode-side-by-side #markdownInput::-webkit-scrollbar-thumb:hover,
         .mode-side-by-side #markdownPreview::-webkit-scrollbar-thumb:hover {
-            background: var(--neutral-dark);
+            background: var(--viewer-divider-hover);
         }
 
         /* Hide elements that might clutter side-by-side view if needed */
         .mode-side-by-side .header {
             margin-bottom: 1rem;
+        }
+
+        /* Prevent text selection while dragging divider */
+        body.resizing {
+            user-select: none;
+            cursor: col-resize;
         }
 
         /* Responsive override: Disable side-by-side on small screens */
@@ -438,9 +486,14 @@
             }
             .mode-side-by-side .editor-container,
             .mode-side-by-side .preview-container {
-                width: 100%;
+                width: 100% !important;
+                flex: none;
                 overflow: visible;
                 height: auto;
+                border-radius: 8px;
+            }
+            .mode-side-by-side .editor-container {
+                margin-bottom: 2rem;
             }
             .mode-side-by-side #markdownInput {
                 height: auto !important;
@@ -448,6 +501,9 @@
             }
             .mode-side-by-side #markdownPreview {
                 overflow-y: visible;
+            }
+            .mode-side-by-side .resize-divider {
+                display: none;
             }
         }
     </style>
@@ -459,14 +515,17 @@
                 <h1>View Scrubbai</h1>
                 <p>Professional Markdown Viewer & Editor</p>
             </div>
-            <div class="settings-panel d-flex align-items-center gap-3 mt-3 mt-md-0">
+            <div class="settings-panel d-flex align-items-center gap-4 mt-3 mt-md-0">
                 <div class="form-check form-switch d-none d-md-block">
                     <input class="form-check-input" type="checkbox" id="layoutToggle">
                     <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
                 </div>
-                <div id="widthControl" class="d-none d-flex align-items-center gap-2">
-                    <label for="widthSlider" class="form-label mb-0 small text-nowrap">Width:</label>
-                    <input type="range" class="form-range" id="widthSlider" min="50" max="100" value="80" style="width: 100px;">
+                <div class="theme-toggle">
+                    <span class="theme-icon" id="sunIcon">&#9728;</span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="themeToggle">
+                    </div>
+                    <span class="theme-icon" id="moonIcon">&#9790;</span>
                 </div>
             </div>
         </div>
@@ -476,7 +535,7 @@
         <div class="view-mode-container">
             <div class="editor-container">
                 <div class="textarea-wrapper">
-                    <label for="markdownInput" class="form-label fw-bold" style="color: var(--stryker-navy);">
+                    <label for="markdownInput" class="form-label fw-bold">
                         Markdown Editor
                     </label>
                     <textarea
@@ -492,14 +551,14 @@
                 </div>
 
                 <div class="button-group">
-                    <button id="clearBtn" class="btn btn-stryker-secondary">
+                    <button id="clearBtn" class="btn btn-outline-secondary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
                             <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                             <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                         </svg>
                         Clear
                     </button>
-                    <button id="rerenderBtn" class="btn btn-stryker-primary">
+                    <button id="rerenderBtn" class="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
                             <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
                             <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
@@ -509,8 +568,10 @@
                 </div>
             </div>
 
+            <div class="resize-divider" id="resizeDivider"></div>
+
             <div class="preview-container">
-                <h2 class="preview-header fw-bold" style="color: var(--stryker-navy); font-size: 1rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">
+                <h2 class="preview-header fw-bold" style="font-size: 1rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">
                     Preview
                 </h2>
                 <div id="markdownPreview" class="empty-state">
@@ -561,12 +622,46 @@
         const rerenderBtn = document.getElementById('rerenderBtn');
 
         const layoutToggle = document.getElementById('layoutToggle');
-        const widthSlider = document.getElementById('widthSlider');
-        const widthControl = document.getElementById('widthControl');
         const mainContainer = document.getElementById('mainContainer');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeStylesheet = document.getElementById('theme-stylesheet');
+        const resizeDivider = document.getElementById('resizeDivider');
+        const editorContainer = document.querySelector('.editor-container');
+        const previewContainer = document.querySelector('.preview-container');
+
+        // Theme URLs
+        const THEME_LIGHT = 'https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/flatly/bootstrap.min.css';
+        const THEME_DARK = 'https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css';
 
         // Debounce timer
         let debounceTimer;
+
+        // Theme Handling
+        function setTheme(isDark) {
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeStylesheet.href = THEME_DARK;
+                // Update Mermaid theme
+                mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeStylesheet.href = THEME_LIGHT;
+                // Update Mermaid theme
+                mermaid.initialize({ startOnLoad: false, theme: 'default' });
+            }
+            // Re-render to apply Mermaid theme
+            renderMarkdown();
+            // Save preference
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                themeToggle.checked = true;
+                setTheme(true);
+            }
+        }
 
         // View Mode Handlers
         function toggleLayout() {
@@ -574,30 +669,68 @@
 
             if (isSideBySide) {
                 document.body.classList.add('mode-side-by-side');
-                widthControl.classList.remove('d-none');
-
-                // Set initial container width from slider
-                updateContainerWidth();
-
+                // Reset to 50% split
+                editorContainer.style.flex = '0 0 50%';
                 // Initialize scroll sync
                 initScrollSync();
             } else {
                 document.body.classList.remove('mode-side-by-side');
-                widthControl.classList.add('d-none');
-
-                // Reset container width
-                mainContainer.style.maxWidth = '';
-
+                // Reset flex
+                editorContainer.style.flex = '';
                 // Remove scroll sync
                 removeScrollSync();
             }
         }
 
-        function updateContainerWidth() {
-            if (layoutToggle.checked) {
-                const width = widthSlider.value;
-                mainContainer.style.maxWidth = `${width}%`;
-            }
+        // Resizable Divider Logic
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        function startResize(e) {
+            if (!layoutToggle.checked) return;
+            isResizing = true;
+            startX = e.clientX || e.touches[0].clientX;
+            startWidth = editorContainer.offsetWidth;
+            document.body.classList.add('resizing');
+            resizeDivider.classList.add('dragging');
+
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+            document.addEventListener('touchmove', doResize);
+            document.addEventListener('touchend', stopResize);
+        }
+
+        function doResize(e) {
+            if (!isResizing) return;
+            e.preventDefault();
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const container = document.querySelector('.view-mode-container');
+            const containerRect = container.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+
+            // Calculate new width as percentage
+            const newWidth = startWidth + (clientX - startX);
+            const minWidth = containerWidth * 0.2; // Minimum 20%
+            const maxWidth = containerWidth * 0.8; // Maximum 80%
+
+            // Clamp the width
+            const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+            const percentage = (clampedWidth / containerWidth) * 100;
+
+            editorContainer.style.flex = `0 0 ${percentage}%`;
+        }
+
+        function stopResize() {
+            isResizing = false;
+            document.body.classList.remove('resizing');
+            resizeDivider.classList.remove('dragging');
+
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+            document.removeEventListener('touchmove', doResize);
+            document.removeEventListener('touchend', stopResize);
         }
 
         // Scroll Sync Logic
@@ -830,7 +963,14 @@
         rerenderBtn.addEventListener('click', renderMarkdown);
 
         layoutToggle.addEventListener('change', toggleLayout);
-        widthSlider.addEventListener('input', updateContainerWidth);
+        themeToggle.addEventListener('change', () => setTheme(themeToggle.checked));
+
+        // Resizable divider events
+        resizeDivider.addEventListener('mousedown', startResize);
+        resizeDivider.addEventListener('touchstart', startResize);
+
+        // Load saved theme preference
+        loadSavedTheme();
 
         // Initial render
         renderMarkdown();
