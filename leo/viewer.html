@@ -343,19 +343,37 @@
         }
 
         /* Theme toggle styling */
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .theme-toggle .form-check-input {
-            width: 3rem;
-            height: 1.5rem;
-        }
-
         .theme-icon {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Settings dropdown styling */
+        .dropdown-menu {
+            min-width: 200px;
+            background-color: var(--viewer-card-bg);
+            border-color: var(--viewer-border);
+        }
+
+        .dropdown-item-text {
+            color: var(--viewer-text);
+            padding: 0.5rem 1rem;
+        }
+
+        .dropdown-divider {
+            border-color: var(--viewer-border);
+        }
+
+        /* Swapped sides layout */
+        .mode-swapped .view-mode-container {
+            flex-direction: row-reverse;
+        }
+
+        .mode-swapped .editor-container {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .mode-swapped .preview-container {
+            border-radius: 8px 0 0 8px;
         }
 
         /* Side-by-Side Layout Styles */
@@ -597,18 +615,39 @@
                 <h1>View Scrubbai</h1>
                 <p>Professional Markdown Viewer & Editor</p>
             </div>
-            <div class="settings-panel d-flex align-items-center gap-4 mt-3 mt-md-0">
-                <div class="form-check form-switch d-none d-md-block">
-                    <input class="form-check-input" type="checkbox" id="layoutToggle">
-                    <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
-                </div>
-                <div class="theme-toggle">
-                    <span class="theme-icon" id="sunIcon">&#9728;</span>
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" id="themeToggle">
-                    </div>
-                    <span class="theme-icon" id="moonIcon">&#9790;</span>
-                </div>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: text-bottom;">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                    </svg>
+                    Settings
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                    <li class="dropdown-item-text">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="layoutToggle">
+                            <label class="form-check-label" for="layoutToggle">Side-by-Side</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item-text">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="swapSidesToggle">
+                            <label class="form-check-label" for="swapSidesToggle">Swap Sides</label>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="dropdown-item-text">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="theme-icon">&#9728;</span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="themeToggle">
+                            </div>
+                            <span class="theme-icon">&#9790;</span>
+                            <span class="ms-1">Theme</span>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -1226,6 +1265,35 @@
             }
         }
 
+        /**
+         * Toggle swapped sides (editor on right, preview on left)
+         */
+        function toggleSwapSides() {
+            const swapSidesToggle = document.getElementById('swapSidesToggle');
+            const isSwapped = swapSidesToggle.checked;
+
+            if (isSwapped) {
+                document.body.classList.add('mode-swapped');
+            } else {
+                document.body.classList.remove('mode-swapped');
+            }
+
+            // Save preference
+            localStorage.setItem('swapSides', isSwapped ? 'true' : 'false');
+        }
+
+        /**
+         * Load saved swap sides preference
+         */
+        function loadSwapSidesPreference() {
+            const swapSidesToggle = document.getElementById('swapSidesToggle');
+            const savedPref = localStorage.getItem('swapSides');
+            if (savedPref === 'true') {
+                swapSidesToggle.checked = true;
+                document.body.classList.add('mode-swapped');
+            }
+        }
+
         // =====================================================
         // RESIZABLE DIVIDER
         // =====================================================
@@ -1524,6 +1592,7 @@
 
         layoutToggle.addEventListener('change', toggleLayout);
         themeToggle.addEventListener('change', () => setTheme(themeToggle.checked));
+        document.getElementById('swapSidesToggle').addEventListener('change', toggleSwapSides);
 
         resizeDivider.addEventListener('mousedown', startResize);
         resizeDivider.addEventListener('touchstart', startResize);
@@ -1531,8 +1600,9 @@
         // Initialize Mermaid resize handlers (event delegation)
         initMermaidResizeHandlers();
 
-        // Load saved theme preference
+        // Load saved preferences
         loadSavedTheme();
+        loadSwapSidesPreference();
 
         // Initial render
         renderMarkdown();
