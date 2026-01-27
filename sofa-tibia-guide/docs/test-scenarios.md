@@ -107,11 +107,11 @@
 
 ## Next Actions
 
-1. **Run P001**: Verify tibia hull + guide OBB at X=15 works reliably
-2. **Run P002**: Test if guide convex hull also works at X=15 (would simplify solution)
-3. **Run P003**: Analyze what's different about tibia hull triangles at X=10 vs X=15
-4. **Run P011**: Test with original CASE4 surgical positions
-5. **Document**: Update `scenes/mvm_seating.py` with working configuration
+1. ~~**Run P001**: Verify tibia hull + guide OBB at X=15 works reliably~~ DONE - PASS
+2. ~~**Run P002**: Test if guide convex hull also works at X=15~~ DONE - PASS
+3. ~~**Run P003**: Analyze what's different about tibia hull triangles~~ DONE - N/A
+4. ~~**Run P011**: Test with original CASE4 surgical positions~~ DONE - FAIL (led to root cause investigation)
+5. ~~**Document**: Update `scenes/mvm_seating.py` with working configuration~~ DONE
 
 ---
 
@@ -449,7 +449,9 @@ Analysis of tibia hull geometry at FAIL vs PASS positions:
 1. ~~**Update `scenes/mvm_seating.py`** with working configuration~~ DONE
 2. ~~**Test with actual surgical case** - verify the fix works end-to-end~~ DONE - **PASS**
 3. ~~**Optional**: Run H-C1, H-A1 for academic interest~~ DONE - confirmed ghost collision hypothesis
-4. **Run unit tests** - ensure no regressions
+4. ~~**Run unit tests** - ensure no regressions~~ DONE - **69 passed, 3 skipped**
+
+### ALL TASKS COMPLETE ✓
 
 ### E2E Test Results (2026-01-27 12:53)
 
