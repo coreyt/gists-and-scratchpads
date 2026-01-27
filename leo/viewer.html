@@ -63,6 +63,21 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* Make containers wider - use more viewport width with small gutters */
+        .container {
+            max-width: calc(100% - 2rem);
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        @media (min-width: 576px) {
+            .container {
+                max-width: calc(100% - 3rem);
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+
         .header {
             background: var(--viewer-card-bg);
             color: var(--viewer-primary);
