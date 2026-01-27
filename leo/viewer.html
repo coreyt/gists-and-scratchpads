@@ -227,15 +227,14 @@
             cursor: ew-resize;
         }
 
-        /* Highlight errors in textarea */
-        .highlight-issues #markdownInput {
-            border-color: #dc3545 !important;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-        }
-
-        .highlight-issues.has-warning #markdownInput {
-            border-color: #ffc107 !important;
-            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+        /* Card body needs flex for scrollable content in side-by-side */
+        .mode-side-by-side .editor-container .card-body,
+        .mode-side-by-side .preview-container .card-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
         }
 
         /* Responsive override: Disable side-by-side on small screens */
@@ -291,12 +290,6 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="swapSidesToggle">
                                 <label class="form-check-label" for="swapSidesToggle">Swap Sides</label>
-                            </div>
-                        </li>
-                        <li class="dropdown-item-text">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="highlightIssuesToggle">
-                                <label class="form-check-label" for="highlightIssuesToggle">Highlight Issues</label>
                             </div>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -1200,21 +1193,6 @@
                     statusIndicator.title = lintResult.message;
                     break;
             }
-
-            // Handle highlight issues setting
-            const highlightToggle = document.getElementById('highlightIssuesToggle');
-            if (highlightToggle && highlightToggle.checked) {
-                if (lintResult.status === 'error') {
-                    document.body.classList.add('highlight-issues');
-                    document.body.classList.remove('has-warning');
-                } else if (lintResult.status === 'warning') {
-                    document.body.classList.add('highlight-issues', 'has-warning');
-                } else {
-                    document.body.classList.remove('highlight-issues', 'has-warning');
-                }
-            } else {
-                document.body.classList.remove('highlight-issues', 'has-warning');
-            }
         }
 
         // =====================================================
@@ -1283,13 +1261,6 @@
         layoutToggle.addEventListener('change', toggleLayout);
         themeToggle.addEventListener('change', () => setTheme(themeToggle.checked));
         document.getElementById('swapSidesToggle').addEventListener('change', toggleSwapSides);
-        document.getElementById('highlightIssuesToggle').addEventListener('change', () => {
-            // Re-run linting to update highlight state
-            const lintResult = lintMarkdown(markdownInput.value);
-            updateStatus(lintResult);
-            // Save preference
-            localStorage.setItem('highlightIssues', document.getElementById('highlightIssuesToggle').checked ? 'true' : 'false');
-        });
 
         resizeDivider.addEventListener('mousedown', startResize);
         resizeDivider.addEventListener('touchstart', startResize);
@@ -1300,11 +1271,6 @@
         // Load saved preferences
         loadSavedTheme();
         loadSwapSidesPreference();
-
-        // Load highlight issues preference
-        if (localStorage.getItem('highlightIssues') === 'true') {
-            document.getElementById('highlightIssuesToggle').checked = true;
-        }
 
         // Initial render
         renderMarkdown();
