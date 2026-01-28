@@ -88,3 +88,4 @@ assets/*.obj
 
 # SOFA specific
 *.scn.bak
+runSofa.ini
