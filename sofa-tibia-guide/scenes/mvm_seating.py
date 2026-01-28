@@ -33,6 +33,7 @@ def create_scene(
     friction_coefficient: float = 0.3,
     gravity: Optional[List[float]] = None,
     dt: float = 0.001,
+    gui: bool = False,
 ):
     """Create SOFA scene with tibia and guide.
 
@@ -45,6 +46,7 @@ def create_scene(
         friction_coefficient: Friction coefficient for contact.
         gravity: Gravity vector [gx, gy, gz] in mm/s^2.
         dt: Simulation timestep in seconds.
+        gui: If True, add visual models for GUI rendering.
 
     Returns:
         SOFA root node.
@@ -73,26 +75,33 @@ def create_scene(
     root.dt = dt
 
     # Required plugins
-    root.addObject(
-        "RequiredPlugin",
-        pluginName=[
-            "Sofa.Component.AnimationLoop",
-            "Sofa.Component.Collision.Detection.Algorithm",
-            "Sofa.Component.Collision.Detection.Intersection",
-            "Sofa.Component.Collision.Geometry",
-            "Sofa.Component.Collision.Response.Contact",
-            "Sofa.Component.Constraint.Lagrangian.Correction",
-            "Sofa.Component.Constraint.Lagrangian.Solver",
-            "Sofa.Component.IO.Mesh",
-            "Sofa.Component.LinearSolver.Iterative",
-            "Sofa.Component.Mapping.NonLinear",
-            "Sofa.Component.Mass",
-            "Sofa.Component.ODESolver.Backward",
-            "Sofa.Component.StateContainer",
-            "Sofa.Component.Topology.Container.Constant",
-            "Sofa.Component.Constraint.Projective",
-        ],
-    )
+    plugins = [
+        "Sofa.Component.AnimationLoop",
+        "Sofa.Component.Collision.Detection.Algorithm",
+        "Sofa.Component.Collision.Detection.Intersection",
+        "Sofa.Component.Collision.Geometry",
+        "Sofa.Component.Collision.Response.Contact",
+        "Sofa.Component.Constraint.Lagrangian.Correction",
+        "Sofa.Component.Constraint.Lagrangian.Solver",
+        "Sofa.Component.IO.Mesh",
+        "Sofa.Component.LinearSolver.Iterative",
+        "Sofa.Component.Mapping.NonLinear",
+        "Sofa.Component.Mass",
+        "Sofa.Component.ODESolver.Backward",
+        "Sofa.Component.StateContainer",
+        "Sofa.Component.Topology.Container.Constant",
+        "Sofa.Component.Constraint.Projective",
+    ]
+
+    # Add visual plugins for GUI mode
+    if gui:
+        plugins.extend([
+            "Sofa.GL.Component.Rendering3D",
+            "Sofa.GL.Component.Shader",
+            "Sofa.Component.Mapping.Linear",
+        ])
+
+    root.addObject("RequiredPlugin", pluginName=plugins)
 
     # Collision pipeline with constraint-based contact
     root.addObject("FreeMotionAnimationLoop")
@@ -146,6 +155,21 @@ def create_scene(
         simulated=False,
         moving=False,
     )
+
+    # Tibia visual (for GUI only)
+    if gui:
+        tibia_visual = tibia.addChild("Visual")
+        tibia_visual.addObject(
+            "OglModel",
+            name="VisualModel",
+            src="@../loader",
+            color="0.9 0.9 0.8 0.7",  # ivory, semi-transparent
+        )
+        tibia_visual.addObject(
+            "IdentityMapping",
+            input="@../mstate",
+            output="@VisualModel",
+        )
 
     # Guide node (dynamic)
     guide = root.addChild("Guide")
@@ -206,6 +230,26 @@ def create_scene(
         input="@../MechanicalObject",
         output="@CollisionMO",
     )
+
+    # Guide visual (for GUI only)
+    if gui:
+        guide_visual = guide.addChild("Visual")
+        guide_visual.addObject(
+            "MeshSTLLoader",
+            name="loader",
+            filename=guide_mesh_path,
+        )
+        guide_visual.addObject(
+            "OglModel",
+            name="VisualModel",
+            src="@loader",
+            color="0.27 0.51 0.71 1.0",  # steel blue
+        )
+        guide_visual.addObject(
+            "RigidMapping",
+            input="@../MechanicalObject",
+            output="@VisualModel",
+        )
 
     return root
 

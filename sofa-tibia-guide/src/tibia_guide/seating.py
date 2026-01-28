@@ -52,6 +52,7 @@ def find_seating_pose(
     guide_mass_kg: float = 0.1,
     collision_simplification: bool = True,
     initial_gap_mm: float = 15.0,
+    gui: bool = False,
 ) -> SeatingResult:
     """Find guide seating position on tibia using physics simulation.
 
@@ -72,6 +73,9 @@ def find_seating_pose(
             for guide to improve simulation stability. Default True.
         initial_gap_mm: Minimum initial gap between guide and tibia in mm.
             Guide is raised if needed to ensure this gap. Default 15.0 mm.
+        gui: If True, run with SOFA's Qt GUI for interactive visualization.
+            The simulation runs interactively and returns when the window is closed.
+            Default False.
 
     Returns:
         SeatingResult with pose in original coordinate frame.
@@ -146,30 +150,48 @@ def find_seating_pose(
             guide_initial_quaternion=[1.0, 0.0, 0.0, 0.0],
             guide_mass_kg=guide_mass_kg,
             dt=dt,
+            gui=gui,
         )
         Sofa.Simulation.init(root)
 
-        # Run simulation until convergence or timeout
-        max_steps = int(max_simulation_time / dt)
-        converged = False
-        prev_pos = np.array([np.inf, np.inf, np.inf])
-        final_step = 0
+        # Run simulation
+        if gui:
+            # Run with interactive GUI
+            import Sofa.Gui
 
-        for step in range(max_steps):
-            Sofa.Simulation.animate(root, dt)
-            final_step = step
+            Sofa.Gui.GUIManager.Init("main", "qglviewer")
+            Sofa.Gui.GUIManager.createGUI(root, __file__)
+            Sofa.Gui.GUIManager.SetDimension(1200, 800)
+            Sofa.Gui.GUIManager.MainLoop(root)
+            Sofa.Gui.GUIManager.closeGUI()
 
-            # Check convergence periodically
-            if step > 0 and step % convergence_check_interval == 0:
-                pose = extract_guide_pose(root)
-                pos_change = np.linalg.norm(pose.position - prev_pos)
-                if pos_change < convergence_threshold:
-                    converged = True
-                    break
-                prev_pos = pose.position.copy()
+            # After GUI closes, extract final state
+            final_pose = extract_guide_pose(root)
+            # In GUI mode, we don't track convergence
+            converged = True
+            final_step = -1  # Unknown number of steps in GUI mode
+        else:
+            # Run headless until convergence or timeout
+            max_steps = int(max_simulation_time / dt)
+            converged = False
+            prev_pos = np.array([np.inf, np.inf, np.inf])
+            final_step = 0
 
-        # Extract final pose
-        final_pose = extract_guide_pose(root)
+            for step in range(max_steps):
+                Sofa.Simulation.animate(root, dt)
+                final_step = step
+
+                # Check convergence periodically
+                if step > 0 and step % convergence_check_interval == 0:
+                    pose = extract_guide_pose(root)
+                    pos_change = np.linalg.norm(pose.position - prev_pos)
+                    if pos_change < convergence_threshold:
+                        converged = True
+                        break
+                    prev_pos = pose.position.copy()
+
+            # Extract final pose
+            final_pose = extract_guide_pose(root)
 
         # Convert to world coordinates
         # pose.position is the DELTA from initial position (which was [0,0,0])

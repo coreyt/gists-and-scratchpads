@@ -50,6 +50,27 @@ def main():
         default=0.01,
         help="Convergence threshold in mm (default: 0.01)",
     )
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Run with interactive SOFA GUI visualization",
+    )
+    parser.add_argument(
+        "--visualize",
+        action="store_true",
+        help="Show PyVista visualization after simulation completes",
+    )
+    parser.add_argument(
+        "--side-by-side",
+        action="store_true",
+        help="Show before/after comparison side by side (with --visualize)",
+    )
+    parser.add_argument(
+        "--screenshot",
+        type=str,
+        metavar="PATH",
+        help="Save visualization to image file (for headless environments)",
+    )
     args = parser.parse_args()
 
     # Validate inputs
@@ -67,6 +88,7 @@ def main():
     print(f"Guide mesh: {args.guide_mesh}")
     print(f"Max simulation time: {args.max_time}s")
     print(f"Convergence threshold: {args.convergence}mm")
+    print(f"GUI mode: {args.gui}")
     print()
 
     # Run simulation
@@ -75,6 +97,7 @@ def main():
         guide_mesh=args.guide_mesh,
         max_simulation_time=args.max_time,
         convergence_threshold=args.convergence,
+        gui=args.gui,
     )
 
     # Print results
@@ -85,6 +108,46 @@ def main():
     print(f"  Simulation steps: {result.steps}")
     print(f"  Final gap to tibia: {result.final_gap_mm:.2f} mm")
     print("=" * 60)
+
+    # Visualization
+    if args.visualize or args.screenshot:
+        try:
+            from tibia_guide.visualization import (
+                visualize_seating_result,
+                visualize_side_by_side,
+                save_seating_screenshot,
+            )
+
+            # Save screenshot (headless)
+            if args.screenshot:
+                print(f"\nSaving visualization to {args.screenshot}...")
+                save_seating_screenshot(
+                    tibia_mesh=args.tibia_mesh,
+                    guide_mesh=args.guide_mesh,
+                    result=result,
+                    output_path=args.screenshot,
+                )
+                print(f"Screenshot saved: {args.screenshot}")
+
+            # Interactive visualization
+            if args.visualize:
+                print("\nLaunching visualization...")
+                if args.side_by_side:
+                    visualize_side_by_side(
+                        tibia_mesh=args.tibia_mesh,
+                        guide_mesh=args.guide_mesh,
+                        result=result,
+                    )
+                else:
+                    visualize_seating_result(
+                        tibia_mesh=args.tibia_mesh,
+                        guide_mesh=args.guide_mesh,
+                        result=result,
+                    )
+        except ImportError as e:
+            print(f"\nVisualization error: {e}")
+            print("Install PyVista with: pip install pyvista")
+            return 1
 
     return 0
 

@@ -21,6 +21,9 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+viz = [
+    "pyvista>=0.43",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
