@@ -1,7 +1,15 @@
 """Pytest fixtures for tibia guide simulation tests."""
 
+import os
+import sys
 import tempfile
 from pathlib import Path
+
+# Ensure SOFA paths are set before any imports try to load Sofa
+_sofa_root = os.environ.get("SOFA_ROOT", "/home/coreyt/sofa/SOFA_v24.06.00_Linux")
+_sofa_python_path = f"{_sofa_root}/plugins/SofaPython3/lib/python3/site-packages"
+if _sofa_python_path not in sys.path and os.path.exists(_sofa_python_path):
+    sys.path.insert(0, _sofa_python_path)
 
 import numpy as np
 import pytest
