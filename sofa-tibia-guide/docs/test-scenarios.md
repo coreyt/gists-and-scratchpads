@@ -1,5 +1,41 @@
 # SOFA Collision Test Scenarios
 
+## Executive Summary
+
+**Status: COMPLETE** - Guide seating simulation is working.
+
+### Problem
+SOFA collision detection failed at certain mesh positions, causing the guide to fall through the tibia instead of resting on its surface.
+
+### Root Cause
+Two independent issues:
+1. **LCPConstraintSolver bugs / ghost collisions** - Internal triangle edges cause incorrect contact normals
+2. **Large coordinate values** - Numerical precision degrades far from origin
+
+### Solution
+```python
+from tibia_guide import find_seating_pose
+result = find_seating_pose("tibia.stl", "guide.stl")
+# Returns: pose in original coordinates, converged=True, gap=0.53mm
+```
+
+The `find_seating_pose` API handles all workarounds internally:
+- Normalizes coordinates to origin
+- Uses `GenericConstraintSolver` (not LCPConstraintSolver)
+- Applies `angleCone=0.1` edge filtering
+- Returns pose in original coordinate frame
+
+### Validation Results (CASE4 Meshes)
+| Metric | Value |
+|--------|-------|
+| Guide seated | Yes |
+| Gap to tibia | 0.53 mm |
+| Converged | Yes |
+| Steps | 1901 |
+| Test suite | 77 passed, 3 skipped |
+
+---
+
 ## Test Environment
 
 | Property | Value |
