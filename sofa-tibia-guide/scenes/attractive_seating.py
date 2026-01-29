@@ -15,6 +15,7 @@ Multi-Phase Collision (2026-01-28):
 - Phase 3: Fine collision (2000 faces, Triangle+Line+Point) - accurate final seating
 """
 
+from pathlib import Path
 from typing import List, Optional, Tuple, Dict, Any
 
 import numpy as np
@@ -24,6 +25,135 @@ from scipy.spatial import cKDTree
 from tibia_guide.metrics.pose import Pose
 
 
+# =============================================================================
+# Settings Management
+# =============================================================================
+
+# Default settings (used if no settings.yaml is found)
+DEFAULT_SETTINGS = {
+    'mating_points': {
+        'distance_threshold_mm': 1.0,
+        'n_points': 150,
+        'seed': 42,
+    },
+    'springs': {
+        'stiffness': 50.0,
+        'damping': 10.0,
+    },
+    'rotation': {
+        'stiffness': 0.0,
+        'max_angular_velocity': 5.0,
+    },
+    'collision': {
+        'enabled': True,
+        'multi_phase': {
+            'enabled': True,
+            'coarse_faces': 500,
+            'fine_faces': 2000,
+        },
+        'single_phase': {
+            'faces': 5000,
+        },
+        'distances': {
+            'alarm_distance': 5.0,
+            'contact_distance': 2.0,
+        },
+    },
+    'convergence': {
+        'thresholds': {
+            'phase1': 0.2,
+            'phase2': 0.05,
+            'phase3': 0.01,
+        },
+        'settling_steps': 50,
+    },
+    'simulation': {
+        'dt': 0.001,
+        'max_time': 10.0,
+        'gravity': [0.0, 0.0, -9810.0],
+        'guide_mass_kg': 0.05,
+    },
+    'initial_offset': {
+        'offset_mm': [0.0, 5.0, 0.0],
+    },
+}
+
+
+def load_settings(settings_path: Optional[str] = None) -> Dict[str, Any]:
+    """Load settings from YAML file, falling back to defaults.
+
+    Args:
+        settings_path: Path to settings.yaml. If None, searches for settings.yaml
+                      in the current directory and parent directories.
+
+    Returns:
+        Dictionary of settings with defaults applied for missing values.
+    """
+    import copy
+
+    settings = copy.deepcopy(DEFAULT_SETTINGS)
+
+    # Find settings file
+    if settings_path is None:
+        # Search in current dir and parents
+        search_paths = [
+            Path.cwd() / 'settings.yaml',
+            Path(__file__).parent.parent / 'settings.yaml',
+        ]
+        for path in search_paths:
+            if path.exists():
+                settings_path = str(path)
+                break
+
+    if settings_path and Path(settings_path).exists():
+        try:
+            import yaml
+            with open(settings_path, 'r') as f:
+                user_settings = yaml.safe_load(f)
+
+            if user_settings:
+                # Deep merge user settings into defaults
+                _deep_merge(settings, user_settings)
+                print(f"[SETTINGS] Loaded from {settings_path}")
+        except ImportError:
+            print("[SETTINGS] PyYAML not installed, using defaults")
+        except Exception as e:
+            print(f"[SETTINGS] Error loading {settings_path}: {e}, using defaults")
+    else:
+        print("[SETTINGS] No settings.yaml found, using defaults")
+
+    return settings
+
+
+def _deep_merge(base: dict, override: dict) -> None:
+    """Recursively merge override into base dictionary."""
+    for key, value in override.items():
+        if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            _deep_merge(base[key], value)
+        else:
+            base[key] = value
+
+
+# Module-level settings cache
+_cached_settings: Optional[Dict[str, Any]] = None
+
+
+def get_settings(reload: bool = False) -> Dict[str, Any]:
+    """Get cached settings, loading if necessary.
+
+    Args:
+        reload: If True, reload settings from disk.
+
+    Returns:
+        Settings dictionary.
+    """
+    global _cached_settings
+    if _cached_settings is None or reload:
+        _cached_settings = load_settings()
+    return _cached_settings
+
+
+# =============================================================================
 # Phase configuration constants
 PHASE_CONFIG = {
     1: {
@@ -449,22 +579,38 @@ def identify_mating_points(
     bone_mesh: trimesh.Trimesh,
     n_points: int = 200,
     seed: int = 42,
+    distance_threshold: Optional[float] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Identify points on guide that should be attracted to bone.
 
     Returns points in guide's LOCAL coordinate frame (relative to centroid).
+
+    The target points are computed using trimesh.proximity.closest_point() to find
+    the actual closest point on the bone mesh surface, not just the closest point
+    in a sampled point cloud. This eliminates the ~2.6mm bias that occurred when
+    using KD-tree lookups on sparse bone samples.
 
     Args:
         guide_mesh: Guide mesh
         bone_mesh: Bone mesh for reference
         n_points: Number of sample points
         seed: Random seed for reproducible surface sampling
+        distance_threshold: Maximum distance (mm) from bone surface for a point to
+                           be considered a mating point. If None, uses value from
+                           settings.yaml (default: 1.0mm). See docs/settings-reference.md.
 
     Returns:
         mating_points_local: (N, 3) points on guide mating surface IN LOCAL FRAME
         target_points_world: (N, 3) corresponding closest points on bone IN WORLD FRAME
         guide_centroid: (3,) guide centroid (for coordinate transforms)
     """
+    from trimesh.proximity import closest_point
+
+    # Load distance threshold from settings if not provided
+    if distance_threshold is None:
+        settings = get_settings()
+        distance_threshold = settings['mating_points']['distance_threshold_mm']
+
     rng = np.random.RandomState(seed)
     guide_centroid = guide_mesh.centroid.copy()
 
@@ -472,22 +618,22 @@ def identify_mating_points(
     samples_world, face_indices = trimesh.sample.sample_surface(guide_mesh, n_points * 3, seed=rng)
     normals = guide_mesh.face_normals[face_indices]
 
-    # Build bone KD-tree
-    bone_samples, _ = trimesh.sample.sample_surface(bone_mesh, 5000, seed=rng)
-    bone_tree = cKDTree(bone_samples)
+    # Find closest points on bone mesh surface (not sampled points!)
+    # This is the key fix: closest_point returns the actual closest point on
+    # the mesh surface, eliminating the bias from sparse sampling.
+    closest_bone_points, distances, _ = closest_point(bone_mesh, samples_world)
 
-    # Find distances and closest bone points
-    distances, indices = bone_tree.query(samples_world, k=1)
-    closest_bone_points = bone_samples[indices]
-
-    # Filter to mating surface: closest points to bone are the mating surface
-    distance_threshold = np.percentile(distances, 40)  # Use closest 40%
+    # Filter to mating surface: use an absolute distance threshold rather than
+    # percentile. For a guide that should seat directly on the bone, we want
+    # only points that are very close to contact. Using percentile-based
+    # thresholds was including points 3-8mm away, creating spring bias.
+    # See docs/settings-reference.md for tuning guidance.
     proximity_mask = distances < distance_threshold
 
     # Filter by normal orientation: keep only points whose normals point
     # toward the bone (concave/inner surface). Without this filter, both
     # inner and outer guide surfaces are selected, creating a systematic
-    # bias that pulls the guide ~2.8mm off the designed pose.
+    # bias that pulls the guide off the designed pose.
     toward_bone = closest_bone_points - samples_world
     toward_bone_norm = toward_bone / (np.linalg.norm(toward_bone, axis=1, keepdims=True) + 1e-12)
     normal_dots = np.sum(normals * toward_bone_norm, axis=1)

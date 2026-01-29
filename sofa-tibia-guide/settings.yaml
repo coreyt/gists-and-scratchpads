@@ -1,0 +1,175 @@
+# SOFA Tibia Guide - Simulation Settings
+#
+# This file contains tunable parameters for the attractive seating simulation.
+# Adjust these values to optimize guide seating behavior for your specific use case.
+#
+# See docs/settings-reference.md for detailed documentation on each parameter.
+
+# =============================================================================
+# MATING POINT IDENTIFICATION
+# =============================================================================
+# These settings control how the algorithm identifies which points on the guide
+# should be attracted to the bone surface.
+
+mating_points:
+  # Distance threshold for selecting mating points (mm)
+  # Only guide surface points within this distance of the bone are selected as
+  # mating points. Smaller values = tighter selection of actual contact points.
+  #
+  # - 1.0 mm: Default, selects points nearly touching the bone
+  # - 0.5 mm: Stricter, fewer points but closer to true contact
+  # - 2.0 mm: Looser, more points but may include non-contact surfaces
+  #
+  # If you see the guide settling above the bone, try reducing this value.
+  # If you get too few mating points (<20), try increasing it.
+  distance_threshold_mm: 1.0
+
+  # Maximum number of mating points to use for spring forces
+  # The actual count may be lower if fewer points pass the distance/normal filters.
+  # More points = more stable but slower simulation
+  # Recommended range: 50-200
+  n_points: 150
+
+  # Random seed for reproducible surface sampling
+  seed: 42
+
+# =============================================================================
+# SPRING PHYSICS
+# =============================================================================
+# These settings control the attractive force between guide and bone.
+
+springs:
+  # Spring stiffness (N/mm equivalent in SOFA units)
+  # Higher = stronger attraction, faster convergence but may oscillate
+  # Lower = gentler attraction, slower convergence but more stable
+  #
+  # Recommended range: 10-100
+  stiffness: 50.0
+
+  # Damping coefficient (N·s/mm equivalent)
+  # Higher = faster energy dissipation, less oscillation
+  # Lower = more oscillation, slower settling
+  #
+  # For critically damped behavior, use: damping ≈ 2 * sqrt(stiffness * mass)
+  # With stiffness=50 and mass=0.05: critical damping ≈ 3.2
+  #
+  # Recommended range: 1-20
+  damping: 10.0
+
+# =============================================================================
+# ROTATION CONSTRAINTS
+# =============================================================================
+# These settings control rotational behavior during seating.
+
+rotation:
+  # Rotational spring stiffness pulling toward identity orientation
+  # 0 = no constraint (free rotation)
+  # Higher values resist rotation from initial orientation
+  #
+  # Useful when you want the guide to translate but not rotate much.
+  # Recommended: 0 for free seating, 100-1000 for constrained rotation
+  stiffness: 0.0
+
+  # Maximum angular velocity (rad/s)
+  # Limits how fast the guide can spin during transient oscillations
+  # 0 = unlimited
+  #
+  # Recommended: 5-20 rad/s to prevent wild spinning
+  max_angular_velocity: 5.0
+
+# =============================================================================
+# COLLISION DETECTION
+# =============================================================================
+# Multi-phase collision uses progressively finer meshes for efficiency.
+
+collision:
+  # Enable collision detection
+  enabled: true
+
+  # Multi-phase collision (recommended for complex meshes)
+  # Phase 1: Springs only (no collision) - fast initial positioning
+  # Phase 2: Coarse collision - prevent gross interpenetration
+  # Phase 3: Fine collision - accurate final seating
+  multi_phase:
+    enabled: true
+
+    # Number of faces for coarse collision mesh
+    # Fewer faces = faster but less accurate
+    # Recommended: 300-1000
+    coarse_faces: 500
+
+    # Number of faces for fine collision mesh
+    # More faces = more accurate but slower
+    # Recommended: 1500-3000
+    fine_faces: 2000
+
+  # Single-phase collision (legacy mode, used if multi_phase.enabled=false)
+  single_phase:
+    faces: 5000
+
+  # Collision detection distances (mm)
+  # These affect when collision detection activates
+  distances:
+    # Alarm distance: Start checking for collision when objects are this close
+    # Larger = earlier detection but more computation
+    alarm_distance: 5.0
+
+    # Contact distance: Minimum separation maintained between surfaces
+    # Smaller = tighter fit but may cause instability
+    contact_distance: 2.0
+
+# =============================================================================
+# CONVERGENCE CRITERIA
+# =============================================================================
+# These settings control when the simulation considers the guide "seated".
+
+convergence:
+  # Position change threshold (mm)
+  # Simulation converges when position changes less than this over 100 steps
+  #
+  # Phase 1 (springs only): 0.2 mm
+  # Phase 2 (coarse collision): 0.05 mm
+  # Phase 3 (fine collision): 0.01 mm
+  thresholds:
+    phase1: 0.2
+    phase2: 0.05
+    phase3: 0.01
+
+  # Settling steps after phase transition
+  # Allow this many steps for the system to stabilize after changing collision
+  settling_steps: 50
+
+# =============================================================================
+# SIMULATION PARAMETERS
+# =============================================================================
+
+simulation:
+  # Timestep (seconds)
+  # Smaller = more accurate but slower
+  # Recommended: 0.001 (1ms)
+  dt: 0.001
+
+  # Maximum simulation time (seconds)
+  # Simulation stops if convergence not reached by this time
+  max_time: 10.0
+
+  # Gravity vector (mm/s²)
+  # [0, 0, -9810] = Earth gravity in Z-down orientation
+  # [0, 0, 0] = No gravity (pure spring attraction)
+  gravity: [0.0, 0.0, -9810.0]
+
+  # Guide mass (kg)
+  # Affects dynamics and damping behavior
+  guide_mass_kg: 0.05
+
+# =============================================================================
+# INITIAL OFFSET
+# =============================================================================
+# Move guide away from bone before starting simulation.
+# This prevents initial interpenetration and tests seating from a distance.
+
+initial_offset:
+  # Offset vector [x, y, z] in mm
+  # [0, 5, 0] = Start 5mm above bone (in Y direction)
+  # [0, 0, 0] = Start at designed position
+  offset_mm: [0.0, 5.0, 0.0]

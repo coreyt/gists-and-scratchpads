@@ -347,15 +347,26 @@ def run_validation_tests(guide, tibia, args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Test attractive seating with SOFA")
+    parser = argparse.ArgumentParser(
+        description="Test attractive seating with SOFA",
+        epilog="See docs/settings-reference.md for detailed parameter documentation."
+    )
     parser.add_argument("tibia_mesh", help="Path to tibia STL")
     parser.add_argument("guide_mesh", help="Path to guide STL")
-    parser.add_argument("--stiffness", type=float, default=50.0,
-                        help="Spring stiffness per spring (N/mm)")
-    parser.add_argument("--damping", type=float, default=1.0,
-                        help="Spring damping coefficient")
-    parser.add_argument("--max-time", type=float, default=3.0,
-                        help="Maximum simulation time (s)")
+
+    # Settings file
+    parser.add_argument("--settings", type=str, default=None,
+                        help="Path to settings.yaml (default: auto-detect)")
+
+    # Spring parameters (override settings.yaml)
+    parser.add_argument("--stiffness", type=float, default=None,
+                        help="Spring stiffness per spring (default: from settings.yaml)")
+    parser.add_argument("--damping", type=float, default=None,
+                        help="Spring damping coefficient (default: from settings.yaml)")
+
+    # Simulation parameters
+    parser.add_argument("--max-time", type=float, default=None,
+                        help="Maximum simulation time (s) (default: from settings.yaml)")
     parser.add_argument("--gui", action="store_true",
                         help="Run with SOFA GUI")
     parser.add_argument("--screenshot", type=str,
@@ -364,47 +375,93 @@ def main():
                         help="Hard timeout in seconds (default: 120)")
     parser.add_argument("--status-interval", type=int, default=10,
                         help="Status print interval in seconds (default: 10)")
+
+    # Initial position
     parser.add_argument("--offset", type=float, nargs=3, default=None,
                         metavar=("X", "Y", "Z"),
-                        help="Initial offset to move guide away from bone (mm)")
+                        help="Initial offset to move guide away from bone (mm) (default: from settings.yaml)")
+
+    # Collision options
     parser.add_argument("--no-collision", action="store_true",
                         help="Disable collision detection (test springs only)")
     parser.add_argument("--controller", action="store_true",
                         help="Use Python controller for forces (bypasses RigidMapping issues)")
-    parser.add_argument("--n-points", type=int, default=150,
-                        help="Number of mating points (default: 150)")
-    parser.add_argument("--seed", type=int, default=42,
-                        help="Random seed for mating point sampling (default: 42)")
-    parser.add_argument("--rotation-stiffness", type=float, default=0.0,
-                        help="Rotation constraint stiffness (0=none, 500=moderate, 5000=strong)")
-    parser.add_argument("--max-angular-velocity", type=float, default=0.0,
-                        help="Max angular velocity in rad/s (0=unlimited, 5-20=recommended)")
+
+    # Mating point options (override settings.yaml)
+    parser.add_argument("--n-points", type=int, default=None,
+                        help="Number of mating points (default: from settings.yaml)")
+    parser.add_argument("--seed", type=int, default=None,
+                        help="Random seed for mating point sampling (default: from settings.yaml)")
+    parser.add_argument("--distance-threshold", type=float, default=None,
+                        help="Mating point distance threshold in mm (default: from settings.yaml)")
+
+    # Rotation options (override settings.yaml)
+    parser.add_argument("--rotation-stiffness", type=float, default=None,
+                        help="Rotation constraint stiffness (default: from settings.yaml)")
+    parser.add_argument("--max-angular-velocity", type=float, default=None,
+                        help="Max angular velocity in rad/s (default: from settings.yaml)")
+
+    # Other options
     parser.add_argument("--no-gravity", action="store_true",
                         help="Disable gravity (for testing)")
-    parser.add_argument("--collision-faces", type=int, default=5000,
+    parser.add_argument("--collision-faces", type=int, default=None,
                         help="Number of faces for decimated collision meshes (legacy single-mesh mode)")
-    parser.add_argument("--collision-faces-coarse", type=int, default=0,
-                        help="Coarse collision mesh faces for multi-phase (default: 0 = disabled)")
-    parser.add_argument("--collision-faces-fine", type=int, default=0,
-                        help="Fine collision mesh faces for multi-phase (default: 0 = disabled)")
+    parser.add_argument("--collision-faces-coarse", type=int, default=None,
+                        help="Coarse collision mesh faces for multi-phase (default: from settings.yaml)")
+    parser.add_argument("--collision-faces-fine", type=int, default=None,
+                        help="Fine collision mesh faces for multi-phase (default: from settings.yaml)")
     parser.add_argument("--multi-phase", action="store_true",
-                        help="Enable multi-phase collision (coarse=500, fine=2000)")
+                        help="Enable multi-phase collision (uses settings.yaml values)")
     parser.add_argument("--diagnose", action="store_true",
                         help="Run mating point diagnostics (no simulation)")
     parser.add_argument("--validate", action="store_true",
                         help="Run V1-V6 validation tests from known-good pose")
     args = parser.parse_args()
 
-    # Handle --multi-phase flag (sets defaults for coarse/fine)
+    # Load settings from file
+    from scenes.attractive_seating import load_settings
+    settings = load_settings(args.settings)
+
+    # Apply defaults from settings.yaml for any unspecified arguments
+    if args.stiffness is None:
+        args.stiffness = settings['springs']['stiffness']
+    if args.damping is None:
+        args.damping = settings['springs']['damping']
+    if args.max_time is None:
+        args.max_time = settings['simulation']['max_time']
+    if args.n_points is None:
+        args.n_points = settings['mating_points']['n_points']
+    if args.seed is None:
+        args.seed = settings['mating_points']['seed']
+    if args.rotation_stiffness is None:
+        args.rotation_stiffness = settings['rotation']['stiffness']
+    if args.max_angular_velocity is None:
+        args.max_angular_velocity = settings['rotation']['max_angular_velocity']
+    if args.offset is None:
+        args.offset = settings['initial_offset']['offset_mm']
+    if args.collision_faces is None:
+        args.collision_faces = settings['collision']['single_phase']['faces']
+    if args.collision_faces_coarse is None:
+        args.collision_faces_coarse = settings['collision']['multi_phase']['coarse_faces'] if settings['collision']['multi_phase']['enabled'] else 0
+    if args.collision_faces_fine is None:
+        args.collision_faces_fine = settings['collision']['multi_phase']['fine_faces'] if settings['collision']['multi_phase']['enabled'] else 0
+
+    # Handle --multi-phase flag (enables multi-phase with settings values)
     if args.multi_phase:
         if args.collision_faces_coarse == 0:
-            args.collision_faces_coarse = 500
+            args.collision_faces_coarse = settings['collision']['multi_phase']['coarse_faces']
         if args.collision_faces_fine == 0:
-            args.collision_faces_fine = 2000
+            args.collision_faces_fine = settings['collision']['multi_phase']['fine_faces']
+
+    # Get distance threshold from settings or CLI
+    if args.distance_threshold is None:
+        args.distance_threshold = settings['mating_points']['distance_threshold_mm']
 
     print("=" * 60)
     print("Attractive Seating Test")
     print(f"  Timeout: {args.timeout}s, Status interval: {args.status_interval}s")
+    print(f"  Mating point distance threshold: {args.distance_threshold}mm")
+    print(f"  Spring stiffness: {args.stiffness}, damping: {args.damping}")
     if args.collision_faces_coarse > 0 and args.collision_faces_fine > 0:
         print(f"  Multi-phase collision: coarse={args.collision_faces_coarse}, fine={args.collision_faces_fine}")
     elif not args.no_collision:
@@ -427,7 +484,12 @@ def main():
         # Check mating points
         timeout.set_phase("identifying mating points")
         print("\nIdentifying mating points...")
-        mating_pts_local, target_pts, guide_centroid = identify_mating_points(guide, tibia, n_points=args.n_points, seed=args.seed)
+        mating_pts_local, target_pts, guide_centroid = identify_mating_points(
+            guide, tibia,
+            n_points=args.n_points,
+            seed=args.seed,
+            distance_threshold=args.distance_threshold
+        )
         mating_pts = mating_pts_local + guide_centroid  # Convert to world for display
         print(f"  Found {len(mating_pts)} mating points")
 
