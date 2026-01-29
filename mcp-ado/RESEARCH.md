@@ -347,12 +347,228 @@ For most users wanting to integrate Azure DevOps with Claude or other AI assista
 
 ---
 
+## Use Case Analysis: Activity Queries
+
+This section analyzes specific query patterns for tracking user and project activity.
+
+### Query 1: "What work did corey@email.com perform over the past month?"
+
+This query requires aggregating data across multiple Azure DevOps domains:
+
+| Data Type | API Support | Server-Side Filtering | Notes |
+|-----------|-------------|----------------------|-------|
+| **Work Items** | ✅ Excellent | ✅ Yes | WIQL supports `[Changed By]`, `[Created By]`, `[Assigned To]` + date ranges |
+| **Commits** | ✅ Good | ✅ Yes | `searchCriteria.author` + `fromDate`/`toDate` parameters |
+| **PR Comments** | ⚠️ Partial | ❌ No | Must fetch all threads, filter client-side by `author.uniqueName` |
+| **PR Created/Reviewed** | ✅ Good | ✅ Yes | `searchCriteria.creatorId` or `reviewerId` parameters |
+| **Pipeline Runs** | ⚠️ Partial | ❌ No | No direct user filter; must check `requestedFor` client-side |
+
+#### Work Items - Full Server-Side Support
+
+```
+POST /_apis/wit/wiql
+{
+  "query": "SELECT [System.Id], [System.Title], [System.State]
+            FROM WorkItems
+            WHERE [System.ChangedBy] = 'corey@email.com'
+            AND [System.ChangedDate] >= @Today - 30"
+}
+```
+
+**Caveat**: WIQL returns only work item IDs. A second call to `/_apis/wit/workitems?ids=1,2,3` is needed for full details.
+
+#### Commits - Full Server-Side Support
+
+```
+GET /{project}/_apis/git/repositories/{repo}/commits
+    ?searchCriteria.author=corey@email.com
+    &searchCriteria.fromDate=2025-12-29
+    &searchCriteria.toDate=2026-01-29
+```
+
+**Caveat**: Must iterate over all repositories in the org/project.
+
+#### PR Comments - Client-Side Filtering Required
+
+```
+# Step 1: Get all PRs (can filter by date range)
+GET /_apis/git/repositories/{repo}/pullrequests?searchCriteria.status=all
+
+# Step 2: For each PR, get threads
+GET /_apis/git/repositories/{repo}/pullRequests/{prId}/threads
+
+# Step 3: Filter comments where author.uniqueName == 'corey@email.com'
+```
+
+**Problem**: This is **N+1 queries** - one per PR. For active repos, this is slow and rate-limit-prone.
+
+---
+
+### Query 2: "What work was done on project Z this week?"
+
+| Data Type | API Support | Server-Side Filtering | Notes |
+|-----------|-------------|----------------------|-------|
+| **Work Items** | ✅ Excellent | ✅ Yes | WIQL scoped to project + date range |
+| **Commits** | ✅ Excellent | ✅ Yes | All repos in project, date range filter |
+| **Pull Requests** | ✅ Excellent | ✅ Yes | Date range + status filters |
+| **Pipeline Runs** | ✅ Good | ✅ Yes | `minTime`/`maxTime` parameters |
+
+This query is **much better supported** because project-scoping is native to most endpoints.
+
+#### Work Items
+
+```
+POST /{project}/_apis/wit/wiql
+{
+  "query": "SELECT [System.Id] FROM WorkItems
+            WHERE [System.TeamProject] = 'ProjectZ'
+            AND [System.ChangedDate] >= @Today - 7"
+}
+```
+
+#### All Commits Across Repos
+
+```
+# Get all repos in project
+GET /{project}/_apis/git/repositories
+
+# For each repo, get commits in date range
+GET /{project}/_apis/git/repositories/{repo}/commits
+    ?searchCriteria.fromDate=2026-01-22
+```
+
+---
+
+### API Limitations & Performance Concerns
+
+#### Rate Limits
+- **Global limit**: 200 TSTUs (throughput units) per 5-minute window
+- **Symptoms**: `Retry-After` header in response, HTTP 429
+- **Mitigation**: Honor `Retry-After`, implement exponential backoff
+
+#### Pagination
+- Most endpoints return max 100-200 items per request
+- Use continuation tokens or `$skip`/`$top` parameters
+- Large result sets require multiple round-trips
+
+#### N+1 Query Problem (PR Comments)
+The biggest issue for user-centric queries is **PR comment retrieval**:
+
+```
+PRs in org          × Threads per PR    × API calls
+    500             ×      10           = 5,000+ calls
+```
+
+**Solutions**:
+1. **Cache aggressively** - Comments don't change after creation
+2. **Limit scope** - Only query recent/active PRs
+3. **Use Search API** - `/_apis/search/codesearchresults` may help for some use cases
+4. **Accept latency** - Run as batch job, not real-time
+
+#### WIQL Limitations
+- Max 32KB query length
+- `WAS EVER` / `EVER` operators scan all revisions (slow)
+- `ASOF` queries for historical snapshots add overhead
+- Returns only IDs - second call needed for field data
+
+---
+
+### Can an MCP Server Help?
+
+**Yes, but with caveats.**
+
+#### What MCP Provides
+1. **Unified interface** - Single protocol for AI to query ADO
+2. **Tool abstraction** - LLM doesn't need to know API details
+3. **Authentication handling** - MCP server manages tokens
+
+#### What MCP Doesn't Solve
+1. **API limitations** - Still bound by ADO REST API capabilities
+2. **N+1 queries** - MCP server still makes the same underlying calls
+3. **Rate limits** - MCP adds no protection against throttling
+
+#### Recommended Architecture for Activity Queries
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     User Query                              │
+│  "What did corey@email.com do last month?"                  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    MCP Server                               │
+│  - Exposes high-level tools like:                           │
+│    • get_user_activity(email, date_range)                   │
+│    • get_project_summary(project, date_range)               │
+└─────────────────────────────────────────────────────────────┘
+                              │
+            ┌─────────────────┼─────────────────┐
+            ▼                 ▼                 ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│  Work Items   │   │    Commits    │   │  PR Comments  │
+│   (WIQL)      │   │  (per-repo)   │   │ (cached/batch)│
+└───────────────┘   └───────────────┘   └───────────────┘
+            │                 │                 │
+            └─────────────────┼─────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Local Cache / DB                          │
+│  - SQLite or similar for PR comments, commit history        │
+│  - Incremental sync to avoid repeated full fetches          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Practical Recommendations
+
+| Approach | Effort | Best For |
+|----------|--------|----------|
+| **Use existing MCP + LLM reasoning** | Low | Ad-hoc queries, small projects |
+| **Custom MCP with aggregation tools** | Medium | Regular activity reports |
+| **MCP + background sync + local cache** | High | Large orgs, real-time dashboards |
+
+For the specific queries mentioned:
+1. **Start with Microsoft's MCP server** - Test if existing tools suffice
+2. **If too slow** - Build custom tools that pre-aggregate data
+3. **For enterprise scale** - Consider Azure DevOps Analytics Service (OData) as data source instead of REST API
+
+---
+
+### Alternative: Azure DevOps Analytics Service (OData)
+
+For complex activity queries, consider the **Analytics Service** instead of REST API:
+
+```
+GET https://analytics.dev.azure.com/{org}/{project}/_odata/v4.0-preview/WorkItemRevisions
+    ?$filter=ChangedDate ge 2026-01-01 and ChangedBy/UserEmail eq 'corey@email.com'
+    &$select=WorkItemId,Title,State,ChangedDate
+```
+
+**Advantages**:
+- Designed for reporting/analytics workloads
+- Better aggregation support
+- Less rate limiting for read-heavy queries
+
+**Disadvantages**:
+- Read-only (no mutations)
+- Data may be slightly delayed (not real-time)
+- Different API structure to learn
+
+---
+
 ## Sources
 
+### MCP Servers
 - [Microsoft Azure DevOps MCP Server - GitHub](https://github.com/microsoft/azure-devops-mcp)
 - [Azure DevOps MCP Server Overview - Microsoft Learn](https://learn.microsoft.com/en-us/azure/devops/mcp-server/mcp-server-overview)
-- [Azure DevOps MCP Server GA Announcement - InfoQ](https://www.infoq.com/news/2025/11/microsoft-ado-mcp-server/)
 - [Community MCP Server - GitHub](https://github.com/Tiberriver256/mcp-server-azure-devops)
 - [MCP TypeScript SDK - GitHub](https://github.com/modelcontextprotocol/typescript-sdk)
-- [Azure DevOps REST API - Microsoft Learn](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/?view=azure-devops-rest-7.1)
 - [Build MCP Servers with TypeScript - DEV Community](https://dev.to/shadid12/how-to-build-mcp-servers-with-typescript-sdk-1c28)
+
+### Azure DevOps REST API
+- [WIQL Syntax Reference - Microsoft Learn](https://learn.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops)
+- [WIQL Query API - Microsoft Learn](https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/wiql/query-by-wiql?view=azure-devops-rest-7.1)
+- [Get Commits API - Microsoft Learn](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/commits/get-commits?view=azure-devops-rest-7.1)
+- [Pull Request Threads API - Microsoft Learn](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-threads?view=azure-devops-rest-7.1)
+- [Rate and Usage Limits - Microsoft Learn](https://learn.microsoft.com/en-us/azure/devops/integrate/concepts/rate-limits?view=azure-devops)
+- [Integration Best Practices - Microsoft Learn](https://learn.microsoft.com/en-us/azure/devops/integrate/concepts/integration-bestpractices?view=azure-devops)
